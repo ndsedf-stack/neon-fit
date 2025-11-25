@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Layers, Clock, TrendingUp } from 'lucide-react';
 
