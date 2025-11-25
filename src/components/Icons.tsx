@@ -22,7 +22,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export const Icons  {
+export const Icons = {
   Activity,
   Heart,
   Zap,
