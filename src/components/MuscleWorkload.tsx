@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Fan, Disc, Zap, Activity } from 'lucide-react';
 
