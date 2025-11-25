@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { Dumbbell, Activity, TrendingUp, Maximize2, Zap, RefreshCw, Cpu } from 'lucide-react';
 
