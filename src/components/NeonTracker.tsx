@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { TrackerProps } from '../types';
 import { Zap, Activity, Hexagon, BarChart3, Grip, Cpu } from 'lucide-react';
