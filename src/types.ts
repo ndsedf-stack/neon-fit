@@ -1,3 +1,4 @@
+import React from 'react';
 
 export interface RingData {
   value: number;
@@ -15,4 +16,19 @@ export interface TrackerProps {
   sessions: { current: number; max: number };
   sets: { current: number; max: number };
   status: 'consistent' | 'warning' | 'inactive';
+}
+
+export interface Message {
+  id: string;
+  role: 'user' | 'model';
+  content: string;
+  timestamp: number;
+  isError?: boolean;
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
 }
