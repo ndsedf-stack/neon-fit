@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NeonTracker } from './components/NeonTracker';
 import { MuscleHud } from './components/MuscleHud';
