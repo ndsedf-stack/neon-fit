@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Zap, Activity, Battery, ChevronRight } from 'lucide-react';
 
