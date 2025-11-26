@@ -225,7 +225,7 @@
               <div class="flex flex-col items-end">
                    <div class="text-[40px] font-hud font-black text-white/5 absolute top-2 right-4 pointer-events-none">01</div>
                    <div class="px-3 py-1 bg-white/5 rounded border border-white/10 text-xs font-bold text-white shadow-lg backdrop-blur-md">
-                       WEEK <span class="text-cyan-400 text-lg ml-1">01</span>
+                       WEEK <span class="text-cyan-400 text-lg ml-1" id="week-badge">01</span>
                    </div>
               </div>
           </div>
@@ -234,14 +234,10 @@
           <div>
               <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                   <span>Block Progression</span>
-                  <span class="text-cyan-400">20%</span>
+                  <span class="text-cyan-400" id="block-progress">0%</span>
               </div>
               <div class="segment-container" id="week-segments">
-                  <div class="segment filled"></div>
-                  <div class="segment pulse"></div>
-                  <div class="segment"></div>
-                  <div class="segment"></div>
-                  <div class="segment"></div>
+                  <!-- JS Injected -->
               </div>
           </div>
       </section>
@@ -253,7 +249,7 @@
                   <i data-lucide="crosshair" class="w-3 h-3 text-cyan-400"></i>
                   Tactical Target
               </h2>
-              <span class="text-[9px] font-mono-tech text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30" id="mission-day">TODAY</span>
+              <span class="text-[9px] font-mono-tech text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30" id="mission-status">DETECTING...</span>
           </div>
 
           <!-- Added onClick to go to session -->
@@ -267,9 +263,9 @@
                   <div class="absolute bottom-4 left-5 right-5 z-10 flex justify-between items-end">
                       <div>
                            <div class="flex gap-2 mb-1">
-                               <span class="px-1.5 py-0.5 bg-red-500/20 border border-red-500/50 text-[8px] font-bold text-red-400 uppercase tracking-wider rounded-sm">Heavy Duty</span>
+                               <span class="px-1.5 py-0.5 bg-red-500/20 border border-red-500/50 text-[8px] font-bold text-red-400 uppercase tracking-wider rounded-sm" id="workout-type-tag">Mission</span>
                            </div>
-                           <h3 class="text-2xl font-hud font-black text-white leading-none italic" id="workout-name">---</h3>
+                           <h3 class="text-2xl font-hud font-black text-white leading-none italic uppercase" id="workout-name">---</h3>
                       </div>
                       <div class="w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center shadow-[0_0_25px_rgba(34,211,238,0.6)] group-hover:bg-white group-hover:text-black transition-all">
                           <i data-lucide="play" class="w-5 h-5 fill-current ml-1"></i>
@@ -471,9 +467,40 @@
         });
     });
 
-    // --- DATA HYDRATION ---
-    // Default to Week 1, Sunday for demo purposes
-    const STATE = { week: 1, day: 'dimanche' };
+    // --- DATA INTELLIGENCE LAYER ---
+    // Reads current day, calculates week, and finds next mission
+    
+    const STATE = { 
+        week: parseInt(localStorage.getItem('hybrid_current_week') || 1), 
+        day: 'dimanche', // Will be overwritten
+        status: 'TODAY'
+    };
+
+    function determineNextSession() {
+        const todayIndex = new Date().getDay(); // 0 = Sun, 1 = Mon, ...
+        
+        // Map JS Day to Program Day
+        const schedule = {
+            0: 'dimanche', // Sunday
+            2: 'mardi',    // Tuesday
+            5: 'vendredi'  // Friday
+        };
+
+        // Determine if today is a workout day, or find next
+        if (schedule[todayIndex]) {
+            STATE.day = schedule[todayIndex];
+            STATE.status = 'TODAY';
+        } else {
+            // Find next closest day
+            if (todayIndex === 1) { STATE.day = 'mardi'; STATE.status = 'TOMORROW'; }
+            else if (todayIndex === 3 || todayIndex === 4) { STATE.day = 'vendredi'; STATE.status = todayIndex === 4 ? 'TOMORROW' : 'IN 2 DAYS'; }
+            else if (todayIndex === 6) { STATE.day = 'dimanche'; STATE.status = 'TOMORROW'; }
+        }
+        
+        // If "Tomorrow" is Sunday (index 6 -> 0), it might mean next week logic, 
+        // but for simplicity we assume loop within current week structure for display
+        // or user manually advances week.
+    }
 
     // Function to navigate to session
     window.goToSession = () => {
@@ -482,20 +509,50 @@
 
     function init() {
         lucide.createIcons();
+        determineNextSession(); // Calculate real date
         
         const weekData = programData.getWeek(STATE.week);
         const workout = programData.getWorkout(STATE.week, STATE.day);
+        
+        if (!workout) {
+            console.error("Workout not found for", STATE);
+            return;
+        }
+
         const blockName = programData.info.blockTechniques[`block${weekData.block}`]?.name || 'UNKNOWN';
 
+        // Update Dashboard Data
         document.getElementById('block-name').textContent = blockName;
         document.getElementById('technique-name').textContent = weekData.technique.toUpperCase();
         document.getElementById('rpe-target').textContent = `RPE ${weekData.rpeTarget}`;
-        document.getElementById('mission-day').textContent = STATE.day.toUpperCase();
+        document.getElementById('week-badge').textContent = String(STATE.week).padStart(2, '0');
+        document.getElementById('mission-status').textContent = STATE.status;
         
         // Workout Card
-        document.getElementById('workout-name').textContent = workout.name.split('+')[0].trim();
+        const rawName = workout.name.split('+')[0].trim();
+        document.getElementById('workout-name').textContent = rawName;
         document.getElementById('workout-duration').textContent = workout.duration;
         document.getElementById('workout-sets').textContent = workout.totalSets;
+        
+        // Set tag based on name
+        const tagEl = document.getElementById('workout-type-tag');
+        if (rawName.includes('DOS')) { tagEl.className = tagEl.className.replace('text-red-400', 'text-blue-400').replace('bg-red-500/20', 'bg-blue-500/20').replace('border-red-500/50', 'border-blue-500/50'); tagEl.textContent = 'PULL DAY'; }
+        else if (rawName.includes('PECS')) { tagEl.textContent = 'PUSH DAY'; }
+        else { tagEl.textContent = 'HYBRID DAY'; }
+
+        // Render Block Progress Segments
+        const segmentContainer = document.getElementById('week-segments');
+        segmentContainer.innerHTML = '';
+        const weeksInBlock = 5; 
+        const currentWeekInBlock = (STATE.week - 1) % 6 + 1; 
+        
+        for(let i=1; i<=weeksInBlock; i++) {
+            const div = document.createElement('div');
+            div.className = `segment ${i < currentWeekInBlock ? 'filled' : (i === currentWeekInBlock ? 'pulse filled' : '')}`;
+            segmentContainer.appendChild(div);
+        }
+        document.getElementById('block-progress').textContent = `${Math.round((currentWeekInBlock/weeksInBlock)*100)}%`;
+
 
         // Exercise List (Compact)
         const previewEl = document.getElementById('exercise-preview');
