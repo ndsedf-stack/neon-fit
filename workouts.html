@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>HYBRID 63 // ARMORY</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;500;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      --cyan: #22d3ee;
+      --cyan-glow: rgba(34, 211, 238, 0.6);
+      --violet: #8b5cf6;
+      --violet-glow: rgba(139, 92, 246, 0.6);
+      --dark-bg: #020617;
+      --card-bg: rgba(10, 15, 30, 0.85);
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      font-family: 'Inter', sans-serif;
+      color: #e2e8f0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* --- DYNAMIC CANVAS BACKGROUND --- */
+    #neuro-net {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: -2;
+        background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+    }
+
+    /* --- TYPOGRAPHY EFFECTS --- */
+    .font-hud { font-family: 'Rajdhani', sans-serif; }
+    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+    
+    .text-glow-cyan { text-shadow: 0 0 10px var(--cyan-glow); }
+    .text-glow-violet { text-shadow: 0 0 10px var(--violet-glow); }
+    .text-glow-white { text-shadow: 0 0 15px rgba(255,255,255,0.4); }
+
+    /* --- QUANTUM CARD STYLE --- */
+    .quantum-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .quantum-card.expanded {
+        border-color: rgba(34, 211, 238, 0.3);
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    /* Active Hologram Border */
+    .holo-border {
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 1px;
+        background: linear-gradient(180deg, rgba(34,211,238,0.5), transparent, rgba(139,92,246,0.5));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* --- INPUT HUD STYLE --- */
+    .hud-input {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        font-family: 'Share Tech Mono', monospace;
+        transition: all 0.3s;
+    }
+    .hud-input:focus {
+        border-color: var(--cyan);
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        outline: none;
+    }
+
+    /* --- FILTER CHIPS --- */
+    .filter-chip {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s;
+    }
+    .filter-chip.active {
+        background: rgba(34, 211, 238, 0.15);
+        border-color: var(--cyan);
+        color: var(--cyan);
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+    }
+
+    /* --- ACCORDION ANIMATION --- */
+    .details-panel {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+    }
+    .details-panel.open {
+        max-height: 1000px;
+        transition: max-height 0.6s ease-in-out;
+    }
+
+    /* --- BOTTOM NAV --- */
+    .glass-dock {
+        background: rgba(5, 8, 20, 0.85);
+        backdrop-filter: blur(30px) saturate(180%);
+        border-top: 1px solid rgba(255,255,255,0.08);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-btn.active { color: #22d3ee; text-shadow: 0 0 10px var(--cyan-glow); }
+    .nav-btn.active i { transform: scale(1.1); }
+
+  </style>
+</head>
+<body class="selection:bg-cyan-500/30">
+
+  <!-- DYNAMIC BACKGROUND -->
+  <canvas id="neuro-net"></canvas>
+
+  <!-- HEADER -->
+  <header class="fixed top-0 w-full z-40 px-6 pt-12 pb-2 bg-gradient-to-b from-[#020617] via-[#020617]/95 to-transparent backdrop-blur-sm">
+      <div class="flex justify-between items-end mb-4">
+          <div>
+              <div class="flex items-center gap-2 mb-1">
+                   <i data-lucide="crosshair" class="w-3 h-3 text-cyan-400 animate-spin-slow"></i>
+                   <span class="text-[9px] font-bold tracking-[0.2em] text-cyan-500 uppercase font-mono-tech">ARMORY ACCESS</span>
+              </div>
+              <h1 class="text-3xl font-hud font-black text-white italic tracking-wide text-glow-white">
+                  MISSION<span class="text-cyan-400">.SELECT</span>
+              </h1>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-slate-800 border border-slate-600/50 relative overflow-hidden">
+             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover opacity-80" />
+          </div>
+      </div>
+
+      <!-- HUD SEARCH -->
+      <div class="relative group">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+          <input type="text" id="search-input" placeholder="SEARCH PROTOCOLS_..." class="hud-input w-full bg-black/40 rounded-lg py-3 pl-10 pr-4 text-sm placeholder:text-slate-600">
+      </div>
+
+      <!-- FILTERS -->
+      <div class="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar">
+          <button class="filter-chip active px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap" onclick="filterWorkouts('all', this)">ALL SYSTEMS</button>
+          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('dimanche', this)">DIMANCHE</button>
+          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('mardi', this)">MARDI</button>
+          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('vendredi', this)">VENDREDI</button>
+          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('maison', this)">HOME</button>
+      </div>
+  </header>
+
+  <!-- MAIN LIST -->
+  <main class="relative z-10 pt-48 px-4 pb-36 space-y-4" id="workouts-container">
+      <!-- WORKOUTS INJECTED HERE VIA JS -->
+  </main>
+
+  <!-- NAVIGATION DOCK -->
+  <nav class="fixed bottom-0 w-full glass-dock z-50">
+      <div class="flex justify-around items-center h-[85px] px-2">
+          <a href="index.html" class="nav-btn flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
+              <i data-lucide="layout-grid" class="w-6 h-6 transition-transform"></i>
+              <span class="text-[9px] font-bold uppercase tracking-wider">Deck</span>
+          </a>
+          
+          <button class="nav-btn active flex flex-col items-center gap-1.5 p-2 w-16 group">
+              <i data-lucide="activity" class="w-6 h-6 transition-transform"></i>
+              <span class="text-[9px] font-bold uppercase tracking-wider">Ops</span>
+          </button>
+          
+          <!-- FAB -->
+          <div class="relative -top-8">
+              <button class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_10px_30px_rgba(34,211,238,0.4)] border border-white/20 transform transition-all active:scale-95 group">
+                   <i data-lucide="play" class="w-7 h-7 text-white stroke-[3] group-hover:scale-110 transition-transform"></i>
+              </button>
+          </div>
+
+          <button class="nav-btn flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
+              <i data-lucide="calendar" class="w-6 h-6 transition-transform"></i>
+              <span class="text-[9px] font-bold uppercase tracking-wider">Plan</span>
+          </button>
+          
+          <button class="nav-btn flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
+              <i data-lucide="user" class="w-6 h-6 transition-transform"></i>
+              <span class="text-[9px] font-bold uppercase tracking-wider">ID</span>
+          </button>
+      </div>
+  </nav>
+
+  <script type="module">
+    import programData from './program-data.js';
+
+    // --- CANVAS BACKGROUND (Shared) ---
+    const canvas = document.getElementById('neuro-net');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.size = Math.random() * 2;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > width) this.vx *= -1;
+            if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+        draw() {
+            ctx.fillStyle = 'rgba(139, 92, 246, 0.2)'; // Violet tint for Archive
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
+    function animateNetwork() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+            for (let j = i; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 100) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(139, 92, 246, ${0.1 - distance/1000})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateNetwork);
+    }
+    animateNetwork();
+
+    // --- LOGIC ---
+    const container = document.getElementById('workouts-container');
+    const currentWeek = 1;
+    const weekData = programData.getWeek(currentWeek);
+    const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+
+    // Map days to nice UI labels
+    const UI_CONFIG = {
+        'dimanche': { label: 'DIM', color: 'text-cyan-400', border: 'border-cyan-500/50', icon: 'anchor' },
+        'mardi': { label: 'MAR', color: 'text-violet-400', border: 'border-violet-500/50', icon: 'zap' },
+        'vendredi': { label: 'VEN', color: 'text-emerald-400', border: 'border-emerald-500/50', icon: 'activity' },
+        'maison': { label: 'HOME', color: 'text-amber-400', border: 'border-amber-500/50', icon: 'home' }
+    };
+
+    window.filterWorkouts = (filter, btn) => {
+        // Update UI
+        document.querySelectorAll('.filter-chip').forEach(b => {
+            b.classList.remove('active', 'text-cyan-400', 'border-cyan-500');
+            b.classList.add('text-slate-400');
+        });
+        if(btn) {
+            btn.classList.add('active');
+            btn.classList.remove('text-slate-400');
+        }
+
+        renderList(filter);
+    };
+
+    function renderList(filter = 'all') {
+        container.innerHTML = '';
+        
+        days.forEach(day => {
+            if (filter !== 'all' && day !== filter) return;
+
+            const workout = weekData[day];
+            if (!workout) return;
+            
+            const ui = UI_CONFIG[day];
+            
+            // Calculate Stats
+            let totalLoad = 0;
+            workout.exercises.forEach(ex => {
+                const reps = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[0]) : ex.reps;
+                totalLoad += ex.sets * reps * ex.weight;
+            });
+
+            // Card HTML
+            const card = document.createElement('div');
+            card.className = "quantum-card group overflow-hidden transition-all duration-300";
+            
+            card.innerHTML = `
+                <div class="holo-border"></div>
+                
+                <!-- HEADER (Clickable) -->
+                <div class="p-5 cursor-pointer relative z-10" onclick="toggleDetails('${day}')">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-10 h-10 rounded-lg bg-slate-900 border ${ui.border} flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+                                <span class="font-hud font-bold text-lg ${ui.color}">${ui.label}</span>
+                            </div>
+                            <div>
+                                <h3 class="font-hud font-black text-xl text-white italic uppercase leading-none mb-1">${workout.name.split('+')[0]}</h3>
+                                <div class="flex gap-2 text-[10px] font-mono-tech text-slate-400">
+                                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${workout.duration} MIN</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="layers" class="w-3 h-3"></i> ${workout.totalSets} SETS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-xs font-bold font-mono-tech ${ui.color}">${(totalLoad/1000).toFixed(1)}k</div>
+                             <div class="text-[8px] text-slate-500 uppercase tracking-widest">Load</div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar Decoy -->
+                    <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden flex">
+                        <div class="h-full w-1/3 bg-slate-600"></div>
+                        <div class="h-full w-1/3 bg-slate-700"></div>
+                    </div>
+                </div>
+
+                <!-- DETAILS (Accordion) -->
+                <div id="details-${day}" class="details-panel bg-black/40 border-t border-white/5">
+                    <div class="p-4 space-y-3">
+                        ${workout.exercises.map(ex => `
+                            <div class="flex items-center justify-between p-2 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-1 h-8 ${ui.color.replace('text', 'bg')} rounded-full shadow-[0_0_8px_currentColor]"></div>
+                                    <div>
+                                        <div class="text-xs font-bold text-white uppercase">${ex.name}</div>
+                                        <div class="text-[9px] text-slate-400 font-mono-tech">${ex.sets} × ${ex.reps} • ${ex.notes || 'Normal'}</div>
+                                    </div>
+                                </div>
+                                <div class="font-mono-tech text-xs font-bold text-white bg-black/50 px-2 py-1 rounded border border-white/10">
+                                    ${ex.weight}kg
+                                </div>
+                            </div>
+                        `).join('')}
+                        
+                        <button class="w-full py-3 mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg font-hud font-bold text-white uppercase tracking-widest shadow-[0_0_20px_rgba(34,211,238,0.4)] hover:scale-[1.02] transition-transform active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Initiate Protocol
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+        
+        lucide.createIcons();
+    }
+
+    // Toggle Function
+    window.toggleDetails = (day) => {
+        const el = document.getElementById(`details-${day}`);
+        const card = el.parentElement;
+        
+        // Close others
+        document.querySelectorAll('.details-panel').forEach(p => {
+            if (p !== el) {
+                p.classList.remove('open');
+                p.parentElement.classList.remove('expanded');
+            }
+        });
+
+        el.classList.toggle('open');
+        card.classList.toggle('expanded');
+    };
+
+    // Search Feature
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('.quantum-card');
+        
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if(text.includes(term)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Initial Render
+    renderList();
+
+  </script>
+</body>
+</html>
