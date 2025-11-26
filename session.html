@@ -5,352 +5,344 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>ACTIVE SESSION // HYBRID 63</title>
+  <title>SESSION // HYBRID</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;500;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
     :root {
       --cyan: #22d3ee;
-      --cyan-glow: rgba(34, 211, 238, 0.6);
-      --red: #ef4444;
-      --dark-bg: #020617;
+      --bg: #020617;
     }
-
     body {
-      background-color: var(--dark-bg);
-      font-family: 'Inter', sans-serif;
-      color: #e2e8f0;
-      /* Prevent elastic scrolling */
-      overflow: hidden; 
-      touch-action: manipulation;
-      -webkit-font-smoothing: antialiased;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* --- BACKGROUND --- */
-    #bg-canvas {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        z-index: -2;
-        background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #000000 90%);
-    }
-
-    /* --- TYPOGRAPHY --- */
-    .font-hud { font-family: 'Rajdhani', sans-serif; }
-    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
-    .text-glow-cyan { text-shadow: 0 0 15px var(--cyan-glow); }
-
-    /* --- MAIN DISPLAY (HOLO) --- */
-    .holo-display {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(34, 211, 238, 0.2);
-        box-shadow: 0 0 40px -10px rgba(34, 211, 238, 0.15);
-        border-radius: 24px;
-        position: relative;
+        background-color: var(--bg);
+        font-family: 'Inter', sans-serif;
+        color: white;
+        height: 100vh;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        touch-action: manipulation; /* No double-tap zoom */
     }
     
-    .holo-display::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-        box-shadow: 0 0 10px var(--cyan);
+    /* Font Utils */
+    .font-hud { font-family: 'Rajdhani', sans-serif; }
+    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+
+    /* --- GLASS PANEL --- */
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
     }
 
     /* --- CONTROLS --- */
-    .tactile-btn {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    .control-btn {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: 16px;
         color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.1s;
-        touch-action: manipulation;
     }
-    .tactile-btn:active {
+    .control-btn:active {
         background: rgba(34, 211, 238, 0.2);
         border-color: var(--cyan);
-        transform: scale(0.96);
+        transform: scale(0.95);
     }
 
-    /* --- RPE SLIDER --- */
-    .rpe-track {
-        height: 8px;
-        background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
-        border-radius: 4px;
+    /* --- BIG BUTTON --- */
+    .action-btn {
+        background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+        box-shadow: 0 0 30px rgba(8, 145, 178, 0.4);
+        border-radius: 20px;
         position: relative;
+        overflow: hidden;
+        transition: transform 0.1s;
     }
-    .rpe-thumb {
-        width: 24px; height: 24px;
-        background: white;
-        border: 2px solid #0f172a;
-        border-radius: 50%;
-        position: absolute;
-        top: 50%; transform: translate(-50%, -50%);
-        box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        pointer-events: none;
-        transition: left 0.1s;
+    .action-btn:active { transform: scale(0.98); box-shadow: 0 0 15px rgba(8, 145, 178, 0.6); }
+
+    /* --- REST OVERLAY --- */
+    #rest-overlay {
+        position: fixed; inset: 0; z-index: 100;
+        background: #020617;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+    }
+    #rest-overlay.active { transform: translateY(0); }
+
+    /* Ring SVG */
+    .progress-ring__circle {
+        transition: stroke-dashoffset 1s linear;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
     }
 
-    /* --- FLASH FX --- */
-    @keyframes flash {
-        0% { background-color: rgba(34, 211, 238, 0.4); }
-        100% { background-color: transparent; }
-    }
-    .flash-active { animation: flash 0.3s ease-out; }
-
-    /* --- SET INDICATORS --- */
-    .dot {
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.1);
-        transition: all 0.3s;
-    }
-    .dot.active { background: white; transform: scale(1.5); box-shadow: 0 0 8px white; }
+    /* --- DOTS --- */
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; transition: 0.3s; }
+    .dot.active { background: white; box-shadow: 0 0 8px white; transform: scale(1.2); }
     .dot.done { background: var(--cyan); }
 
   </style>
 </head>
-<body class="selection:bg-cyan-500/30">
-
-  <canvas id="bg-canvas"></canvas>
-  
-  <!-- FLASH OVERLAY -->
-  <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
+<body>
 
   <!-- HEADER -->
-  <header class="flex-none flex justify-between items-center px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 z-40">
-      <button onclick="window.location.href='workouts.html'" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-          <i data-lucide="x" class="w-5 h-5"></i>
+  <header class="flex-none h-16 px-5 flex justify-between items-center bg-black/20 border-b border-white/5 backdrop-blur-sm z-50">
+      <button onclick="window.history.back()" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 active:bg-white/10">
+          <i data-lucide="chevron-left" class="w-6 h-6"></i>
       </button>
-      
+
       <div class="flex flex-col items-center">
-          <div class="text-[9px] font-bold text-red-500 uppercase tracking-[0.2em] animate-pulse flex items-center gap-1">
-              <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Live
-          </div>
-          <div id="session-timer" class="font-mono-tech text-lg font-bold text-white tracking-widest">00:00</div>
+           <div class="text-[9px] font-bold text-red-500 uppercase tracking-widest animate-pulse">Live Session</div>
+           <div class="font-mono-tech text-lg text-white font-bold" id="timer">00:00</div>
       </div>
 
-      <button onclick="saveAndExit()" class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-colors">
+      <button onclick="alert('Progress Saved')" class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 active:bg-cyan-500/20">
           <i data-lucide="save" class="w-5 h-5"></i>
       </button>
   </header>
 
-  <!-- SCROLLABLE CONTENT AREA -->
-  <main class="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
+  <!-- CONTENT -->
+  <main class="flex-1 flex flex-col p-4 overflow-hidden relative">
       
-      <!-- MAIN DISPLAY -->
-      <div class="holo-display p-6 mb-4 relative min-h-[220px] flex flex-col justify-between">
-          <div class="absolute top-0 right-0 p-4 opacity-10">
-              <i data-lucide="crosshair" class="w-24 h-24 text-white"></i>
-          </div>
+      <!-- EXERCISE CARD -->
+      <div class="glass-panel p-6 flex-1 max-h-[45%] flex flex-col relative overflow-hidden">
+           <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="activity" class="w-32 h-32 text-white"></i></div>
+           
+           <div class="relative z-10 flex-1 flex flex-col justify-center">
+               <div class="flex items-center gap-2 mb-2">
+                   <span class="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider" id="muscle-tag">TARGET</span>
+                   <div class="flex gap-1.5" id="dots-container"></div>
+               </div>
+               
+               <h1 class="text-4xl font-hud font-black text-white leading-[0.9] uppercase italic mb-6 text-shadow-sm" id="ex-name">
+                   LOADING...
+               </h1>
 
-          <!-- Info -->
-          <div class="relative z-10">
-              <div class="flex items-center gap-2 mb-2">
-                  <span class="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider border border-white/10" id="muscle-tag">TARGET</span>
-                  <div class="flex gap-1" id="sets-dots"></div>
-              </div>
-              <h1 class="text-3xl font-hud font-black text-white uppercase italic leading-none text-glow-cyan max-w-[90%]" id="ex-name">LOADING...</h1>
-          </div>
-
-          <!-- Specs -->
-          <div class="grid grid-cols-3 gap-3 mt-6 relative z-10">
-              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
-                  <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Target</div>
-                  <div class="text-xl font-mono-tech font-bold text-white leading-none"><span id="target-sets">-</span><span class="text-sm text-slate-500 mx-0.5">x</span><span id="target-reps">-</span></div>
-              </div>
-              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
-                   <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Prev Load</div>
-                  <div class="text-xl font-mono-tech font-bold text-cyan-400 leading-none" id="last-weight">--</div>
-              </div>
-              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
-                   <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Rest</div>
-                  <div class="text-xl font-mono-tech font-bold text-white leading-none" id="target-rest">--s</div>
-              </div>
-          </div>
-          
-          <!-- Technique Note -->
-          <div id="tech-note" class="mt-4 text-[10px] text-cyan-200 bg-cyan-900/30 p-2 rounded border-l-2 border-cyan-500 hidden relative z-10">
-              <!-- Injected -->
-          </div>
+               <div class="grid grid-cols-3 gap-2">
+                   <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                       <div class="text-[8px] text-slate-500 uppercase font-bold mb-1">Target</div>
+                       <div class="text-xl font-mono-tech font-bold text-white leading-none"><span id="t-sets">0</span>x<span id="t-reps">0</span></div>
+                   </div>
+                   <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                       <div class="text-[8px] text-slate-500 uppercase font-bold mb-1">Load</div>
+                       <div class="text-xl font-mono-tech font-bold text-cyan-400 leading-none" id="t-load">0</div>
+                   </div>
+                   <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                       <div class="text-[8px] text-slate-500 uppercase font-bold mb-1">Rest</div>
+                       <div class="text-xl font-mono-tech font-bold text-white leading-none" id="t-rest">90s</div>
+                   </div>
+               </div>
+           </div>
+           
+           <!-- Tech Note -->
+           <div class="mt-4 pt-3 border-t border-white/10">
+               <div class="text-[10px] text-cyan-300 font-mono-tech uppercase tracking-tight flex items-start gap-2">
+                   <i data-lucide="info" class="w-3 h-3 mt-0.5 flex-shrink-0"></i>
+                   <span id="tech-note">Technique notes will appear here.</span>
+               </div>
+           </div>
       </div>
 
-      <!-- CONTROLS -->
-      <div class="space-y-4 pb-4">
+      <!-- INPUTS -->
+      <div class="mt-4 flex-1 flex flex-col justify-end gap-3">
           
-          <!-- Inputs Grid -->
+          <!-- Weight & Reps Grid -->
           <div class="grid grid-cols-2 gap-3">
-              <!-- Load -->
-              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
-                  <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider text-center mb-2">Load (KG)</div>
-                  <div class="flex items-center justify-between gap-2">
-                      <button onclick="adjWeight(-2.5)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">-</button>
-                      <div class="text-3xl font-hud font-black text-white tracking-wide" id="input-weight">0</div>
-                      <button onclick="adjWeight(2.5)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">+</button>
+              <!-- Weight -->
+              <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+                  <span class="text-[9px] text-slate-500 uppercase font-bold mb-2">WEIGHT (KG)</span>
+                  <div class="flex items-center justify-between w-full">
+                      <button onclick="modWeight(-2.5)" class="control-btn w-10 h-10 text-2xl font-bold">-</button>
+                      <span class="text-3xl font-hud font-black text-white" id="in-weight">0</span>
+                      <button onclick="modWeight(2.5)" class="control-btn w-10 h-10 text-2xl font-bold">+</button>
                   </div>
               </div>
-              
+
               <!-- Reps -->
-              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
-                  <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider text-center mb-2">Reps</div>
-                  <div class="flex items-center justify-between gap-2">
-                      <button onclick="adjReps(-1)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">-</button>
-                      <div class="text-3xl font-hud font-black text-white tracking-wide" id="input-reps">0</div>
-                      <button onclick="adjReps(1)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">+</button>
+              <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+                  <span class="text-[9px] text-slate-500 uppercase font-bold mb-2">REPS</span>
+                  <div class="flex items-center justify-between w-full">
+                      <button onclick="modReps(-1)" class="control-btn w-10 h-10 text-2xl font-bold">-</button>
+                      <span class="text-3xl font-hud font-black text-white" id="in-reps">0</span>
+                      <button onclick="modReps(1)" class="control-btn w-10 h-10 text-2xl font-bold">+</button>
                   </div>
               </div>
           </div>
 
-          <!-- RPE Input -->
-          <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
-              <div class="flex justify-between items-end mb-3">
-                  <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Effort Rating (RPE)</span>
-                  <span class="text-xl font-bold text-yellow-400 font-mono-tech" id="rpe-val">7</span>
+          <!-- RPE Slider -->
+          <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4">
+              <div class="flex justify-between items-end mb-2">
+                  <span class="text-[9px] text-slate-500 uppercase font-bold">INTENSITY (RPE)</span>
+                  <span class="text-xl font-bold text-yellow-400 font-mono-tech" id="in-rpe">7</span>
               </div>
-              <div class="relative h-10 flex items-center" id="rpe-container">
-                  <div class="rpe-track w-full"></div>
-                  <div class="rpe-thumb" id="rpe-thumb" style="left: 70%"></div>
-                  <input type="range" min="5" max="10" step="0.5" value="7" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" oninput="updateRPE(this.value)">
-              </div>
-              <div class="flex justify-between text-[8px] text-slate-600 font-bold uppercase mt-1">
-                  <span>Warmup</span>
-                  <span>Hard</span>
-                  <span>Failure</span>
-              </div>
+              <input type="range" min="5" max="10" step="0.5" value="7" oninput="updRPE(this.value)" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-400">
           </div>
-          
+
       </div>
 
   </main>
 
-  <!-- BOTTOM ACTION BAR (Fixed) -->
-  <div class="flex-none p-4 pb-safe bg-gradient-to-t from-black via-black/90 to-transparent z-40">
-      <button onclick="logSet()" class="w-full h-16 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(8,145,178,0.4)] active:scale-[0.98] transition-all relative overflow-hidden group">
-          <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-          <span class="text-xl font-hud font-black text-white uppercase tracking-[0.2em] relative z-10">LOG SET</span>
-          <i data-lucide="check" class="w-6 h-6 text-white stroke-[4] relative z-10"></i>
+  <!-- ACTION BUTTON (Fixed Bottom) -->
+  <div class="p-4 bg-gradient-to-t from-black to-transparent z-40">
+      <button onclick="logSet()" class="action-btn w-full h-16 flex items-center justify-center gap-3">
+          <span class="text-xl font-hud font-black text-white uppercase tracking-[0.2em]">LOG SET</span>
+          <i data-lucide="check" class="w-6 h-6 text-white stroke-[3]"></i>
       </button>
   </div>
 
-  <!-- IMMERSIVE REST OVERLAY -->
-  <div id="rest-overlay" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
-      
-      <!-- Big Timer Circle -->
-      <div class="relative w-72 h-72 flex items-center justify-center mb-10">
-          <svg class="w-full h-full -rotate-90">
-              <circle cx="144" cy="144" r="130" stroke="#1e293b" stroke-width="4" fill="none"/>
-              <circle id="timer-ring" cx="144" cy="144" r="130" stroke="#22d3ee" stroke-width="4" fill="none" stroke-dasharray="816" stroke-dashoffset="0" stroke-linecap="round"/>
+  <!-- REST OVERLAY -->
+  <div id="rest-overlay">
+      <div class="relative w-64 h-64 mb-10">
+          <svg class="progress-ring" width="256" height="256">
+              <circle class="progress-ring__circle" stroke="#1e293b" stroke-width="8" fill="transparent" r="120" cx="128" cy="128"/>
+              <circle id="timer-ring" class="progress-ring__circle" stroke="#22d3ee" stroke-width="8" fill="transparent" r="120" cx="128" cy="128" stroke-dasharray="753.98" stroke-dashoffset="0" stroke-linecap="round"/>
           </svg>
-          <div class="absolute text-center">
-              <div class="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-2 animate-pulse">Recover</div>
-              <div class="text-7xl font-mono-tech font-bold text-white tracking-tight" id="rest-count">00:00</div>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">RECOVER</div>
+              <div class="text-6xl font-mono-tech font-bold text-white" id="rest-time">00:00</div>
           </div>
       </div>
-
-      <div class="flex gap-4 w-full px-10">
-           <button onclick="addTime(30)" class="flex-1 py-4 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 transition-colors">+30s</button>
-           <button onclick="skipRest()" class="flex-1 py-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold hover:bg-red-500/20 transition-colors">SKIP</button>
+      
+      <div class="flex gap-4 w-full px-8">
+          <button onclick="addRest(30)" class="flex-1 h-14 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold uppercase tracking-wider hover:bg-slate-700">+30s</button>
+          <button onclick="skipRest()" class="flex-1 h-14 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold uppercase tracking-wider hover:bg-red-500/20">SKIP</button>
       </div>
 
-      <div class="absolute bottom-10 w-full text-center px-6 opacity-60">
-          <div class="text-[9px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Upcoming</div>
-          <div class="text-lg font-hud font-bold text-white uppercase" id="next-up">...</div>
+      <div class="mt-8 text-center opacity-60">
+          <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">UP NEXT</div>
+          <div class="text-lg font-hud font-bold text-white uppercase" id="next-ex-name">...</div>
       </div>
   </div>
 
   <script type="module">
     import programData from './program-data.js';
 
-    // --- BG ANIMATION ---
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, particles = [];
-    
-    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize);
-    resize();
-    
-    class P {
-        constructor() { this.reset(); }
-        reset() { this.x = Math.random()*w; this.y = Math.random()*h; this.vy = (Math.random()*0.5)+0.1; this.r = Math.random()*1.5; }
-        update() { this.y -= this.vy; if(this.y < 0) this.reset(); }
-        draw() { ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); }
-    }
-    for(let i=0; i<40; i++) particles.push(new P());
-    function anim() { ctx.clearRect(0,0,w,h); particles.forEach(p=>{p.update();p.draw()}); requestAnimationFrame(anim); }
-    anim();
-
-    // --- LOGIC ---
-    let state = {
-        week: 1, day: 'dimanche', exIdx: 0, setIdx: 0, start: Date.now(),
-        workout: null
-    };
+    // STATE
+    let s = { week:1, day:'dimanche', exIdx:0, setIdx:0, start: Date.now() };
+    let workout = null;
     let restTimer = null;
 
+    // --- HTML EXPOSED FUNCTIONS ---
+    window.modWeight = (d) => {
+        const el = document.getElementById('in-weight');
+        let v = parseFloat(el.textContent) + d;
+        if(v<0) v=0;
+        el.textContent = v%1===0 ? v : v.toFixed(1);
+    };
+    window.modReps = (d) => {
+        const el = document.getElementById('in-reps');
+        let v = parseInt(el.textContent) + d;
+        if(v<0) v=0;
+        el.textContent = v;
+    };
+    window.updRPE = (v) => document.getElementById('in-rpe').textContent = v;
+
+    window.logSet = () => {
+        const dots = document.getElementById('dots-container').children;
+        if(dots[s.setIdx]) {
+            dots[s.setIdx].classList.remove('active');
+            dots[s.setIdx].classList.add('done');
+        }
+        
+        s.setIdx++;
+        const ex = workout.exercises[s.exIdx];
+        
+        // Check if exercise done
+        if(s.setIdx >= ex.sets) {
+             startRest(ex.rest || 90, true);
+        } else {
+             if(dots[s.setIdx]) dots[s.setIdx].classList.add('active');
+             startRest(ex.rest || 90, false);
+        }
+    };
+
+    window.skipRest = (isExDone) => {
+        clearInterval(restTimer);
+        document.getElementById('rest-overlay').classList.remove('active');
+        if(isExDone === true || (isExDone === undefined && window._nextEx === true)) {
+            loadEx(s.exIdx + 1);
+        }
+    };
+
+    window.addRest = (sec) => {
+        window._remTime += sec;
+        window._totalTime += sec; // Extend total base to keep ring logical
+    };
+
+
+    // --- LOGIC ---
     function init() {
-        lucide.createIcons();
         const p = new URLSearchParams(window.location.search);
-        state.week = parseInt(p.get('week')) || 1;
-        state.day = p.get('day') || 'dimanche';
+        s.week = parseInt(p.get('week')) || 1;
+        s.day = p.get('day') || 'dimanche';
         
-        state.workout = programData.getWorkout(state.week, state.day);
-        
+        // Debug safe check
+        try {
+            workout = programData.getWorkout(s.week, s.day);
+            if(!workout) throw new Error("No workout found");
+        } catch(e) {
+            alert("Error loading workout data. Redirecting.");
+            window.location.href='workouts.html';
+            return;
+        }
+
         // Global Timer
-        setInterval(() => {
-            const d = Math.floor((Date.now() - state.start)/1000);
+        setInterval(()=>{
+            const d = Math.floor((Date.now()-s.start)/1000);
             const m = Math.floor(d/60).toString().padStart(2,'0');
-            const s = (d%60).toString().padStart(2,'0');
-            document.getElementById('session-timer').textContent = `${m}:${s}`;
+            const sc = (d%60).toString().padStart(2,'0');
+            document.getElementById('timer').textContent = `${m}:${sc}`;
         }, 1000);
 
         loadEx(0);
+        lucide.createIcons();
     }
 
     function loadEx(idx) {
-        if(idx >= state.workout.exercises.length) {
-            alert("SESSION COMPLETE!");
-            window.location.href = 'workouts.html';
+        if(idx >= workout.exercises.length) {
+            alert("MISSION COMPLETE");
+            window.location.href='workouts.html';
             return;
         }
-        state.exIdx = idx;
-        state.setIdx = 0;
-        const ex = state.workout.exercises[idx];
+        
+        s.exIdx = idx;
+        s.setIdx = 0;
+        const ex = workout.exercises[idx];
 
-        // UI
+        // UI Updates
         document.getElementById('ex-name').textContent = ex.name;
         document.getElementById('muscle-tag').textContent = ex.muscle[0];
-        document.getElementById('target-sets').textContent = ex.sets;
-        document.getElementById('target-reps').textContent = ex.reps;
-        document.getElementById('last-weight').textContent = ex.weight + 'KG';
-        document.getElementById('target-rest').textContent = (ex.rest || 120) + 's';
+        document.getElementById('t-sets').textContent = ex.sets;
+        document.getElementById('t-reps').textContent = ex.reps;
+        document.getElementById('t-load').textContent = ex.weight + 'kg';
+        document.getElementById('t-rest').textContent = (ex.rest||120)+'s';
         
-        // Note
-        const note = document.getElementById('tech-note');
-        if(ex.notes) { note.textContent = ex.notes; note.classList.remove('hidden'); }
-        else note.classList.add('hidden');
+        const noteEl = document.getElementById('tech-note');
+        if(ex.notes) {
+            noteEl.textContent = ex.notes;
+            noteEl.parentElement.style.display = 'block';
+        } else {
+            noteEl.parentElement.style.display = 'none';
+        }
 
-        // Inputs
-        document.getElementById('input-weight').textContent = ex.weight;
-        const r = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[1]||ex.reps) : ex.reps;
-        document.getElementById('input-reps').textContent = r;
+        // Inputs Defaults
+        document.getElementById('in-weight').textContent = ex.weight;
+        const rDef = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[1]||ex.reps) : ex.reps;
+        document.getElementById('in-reps').textContent = rDef;
 
-        // Dots
-        const dc = document.getElementById('sets-dots');
+        // Render Dots
+        const dc = document.getElementById('dots-container');
         dc.innerHTML = '';
         for(let i=0; i<ex.sets; i++) {
             const d = document.createElement('div');
@@ -359,102 +351,45 @@
         }
     }
 
-    // Input handlers attached to window
-    window.adjWeight = (d) => {
-        const el = document.getElementById('input-weight');
-        let v = parseFloat(el.textContent) + d;
-        if(v<0) v=0;
-        el.textContent = v%1===0 ? v : v.toFixed(1);
-    }
-    window.adjReps = (d) => {
-        const el = document.getElementById('input-reps');
-        let v = parseInt(el.textContent) + d;
-        if(v<0) v=0;
-        el.textContent = v;
-    }
-    window.updateRPE = (v) => {
-        document.getElementById('rpe-val').textContent = v;
-        const pct = (v-5)/5 * 100;
-        document.getElementById('rpe-thumb').style.left = `${pct}%`;
-    }
-
-    window.logSet = () => {
-        // Flash
-        document.getElementById('flash-overlay').classList.add('flash-active');
-        setTimeout(()=>document.getElementById('flash-overlay').classList.remove('flash-active'), 300);
-
-        // Update Dot
-        const dots = document.querySelectorAll('.dot');
-        if(dots[state.setIdx]) {
-             dots[state.setIdx].classList.remove('active');
-             dots[state.setIdx].classList.add('done');
-        }
-
-        state.setIdx++;
-        const ex = state.workout.exercises[state.exIdx];
+    function startRest(duration, isExDone) {
+        const ol = document.getElementById('rest-overlay');
+        ol.classList.add('active');
         
-        if(state.setIdx >= ex.sets) {
-            // Exercise Done
-            triggerRest(ex.rest || 120, true);
-        } else {
-            // Next Set
-            if(dots[state.setIdx]) dots[state.setIdx].classList.add('active');
-            triggerRest(ex.rest || 120, false);
-        }
-    }
-
-    function triggerRest(sec, isExDone) {
-        const overlay = document.getElementById('rest-overlay');
-        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        const nextEx = workout.exercises[s.exIdx + 1];
+        document.getElementById('next-ex-name').textContent = isExDone 
+            ? (nextEx ? nextEx.name : "FINISH PROTOCOL") 
+            : "NEXT SET";
         
-        const nextEx = state.workout.exercises[state.exIdx + 1];
-        document.getElementById('next-up').textContent = isExDone ? (nextEx ? `NEXT: ${nextEx.name}` : "FINISH") : "NEXT SET";
+        window._nextEx = isExDone; // Store for skip btn
+        window._remTime = duration;
+        window._totalTime = duration;
 
-        let rem = sec;
         const ring = document.getElementById('timer-ring');
-        const maxDash = 816;
-        
-        updateRestDisplay(rem);
-        
-        if(restTimer) clearInterval(restTimer);
-        restTimer = setInterval(() => {
-            rem--;
-            updateRestDisplay(rem);
-            const off = maxDash - (rem/sec)*maxDash;
-            ring.style.strokeDashoffset = off;
+        const circumference = 753.98;
+        ring.style.strokeDasharray = `${circumference} ${circumference}`;
 
-            if(rem <= 0) {
+        if(restTimer) clearInterval(restTimer);
+        
+        restTimer = setInterval(() => {
+            window._remTime--;
+            
+            // Text
+            const m = Math.floor(window._remTime/60).toString().padStart(2,'0');
+            const sc = (window._remTime%60).toString().padStart(2,'0');
+            document.getElementById('rest-time').textContent = `${m}:${sc}`;
+
+            // Ring
+            const offset = circumference - (window._remTime / window._totalTime) * circumference;
+            ring.style.strokeDashoffset = offset;
+
+            if(window._remTime <= 0) {
+                if(navigator.vibrate) navigator.vibrate([200,100,200]);
                 skipRest(isExDone);
             }
         }, 1000);
-
-        // Save logic ref
-        window.currentRestType = isExDone;
     }
 
-    function updateRestDisplay(s) {
-        const m = Math.floor(s/60).toString().padStart(2,'0');
-        const sc = (s%60).toString().padStart(2,'0');
-        document.getElementById('rest-count').textContent = `${m}:${sc}`;
-    }
-
-    window.addTime = (s) => { /* logic skipped for brevity */ }
-
-    window.skipRest = (isExDone) => {
-        if(isExDone === undefined) isExDone = window.currentRestType;
-        
-        clearInterval(restTimer);
-        document.getElementById('rest-overlay').classList.add('opacity-0', 'pointer-events-none');
-        
-        if(isExDone) loadEx(state.exIdx + 1);
-    }
-
-    window.saveAndExit = () => {
-        if(confirm("Exit Session?")) window.location.href='workouts.html';
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
-
+    init();
   </script>
 </body>
 </html>
