@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr" class="dark">
 <head>
@@ -21,7 +20,6 @@
     :root {
       --cyan: #22d3ee;
       --cyan-glow: rgba(34, 211, 238, 0.6);
-      --violet: #8b5cf6;
       --red: #ef4444;
       --dark-bg: #020617;
     }
@@ -30,132 +28,121 @@
       background-color: var(--dark-bg);
       font-family: 'Inter', sans-serif;
       color: #e2e8f0;
-      overflow: hidden; /* Prevent scrolling during workout focus */
+      /* Prevent elastic scrolling */
+      overflow: hidden; 
       touch-action: manipulation;
       -webkit-font-smoothing: antialiased;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* --- CANVAS BACKGROUND --- */
-    #neuro-net {
+    /* --- BACKGROUND --- */
+    #bg-canvas {
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        top: 0; left: 0; width: 100%; height: 100%;
         z-index: -2;
-        background: radial-gradient(circle at 50% 50%, #0f172a 0%, #000000 100%);
+        background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #000000 90%);
     }
 
     /* --- TYPOGRAPHY --- */
     .font-hud { font-family: 'Rajdhani', sans-serif; }
     .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
-    
-    .text-glow-cyan { text-shadow: 0 0 10px var(--cyan-glow); }
-    .text-glow-red { text-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+    .text-glow-cyan { text-shadow: 0 0 15px var(--cyan-glow); }
 
-    /* --- HOLO CARD (3D) --- */
-    .holo-card {
-        background: rgba(10, 15, 30, 0.8);
+    /* --- MAIN DISPLAY (HOLO) --- */
+    .holo-display {
+        background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(34, 211, 238, 0.2);
-        box-shadow: 0 0 30px rgba(34, 211, 238, 0.1), inset 0 0 20px rgba(34, 211, 238, 0.05);
-        border-radius: 20px;
+        box-shadow: 0 0 40px -10px rgba(34, 211, 238, 0.15);
+        border-radius: 24px;
         position: relative;
         overflow: hidden;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .holo-card::before {
+    
+    .holo-display::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 2px;
+        top: 0; left: 0; right: 0; height: 1px;
         background: linear-gradient(90deg, transparent, var(--cyan), transparent);
         box-shadow: 0 0 10px var(--cyan);
     }
 
-    /* --- INPUT CONTROLS --- */
-    .control-btn {
-        background: rgba(255, 255, 255, 0.05);
+    /* --- CONTROLS --- */
+    .tactile-btn {
+        background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+        border-radius: 16px;
         color: white;
         transition: all 0.1s;
+        touch-action: manipulation;
     }
-    .control-btn:active {
-        background: var(--cyan);
-        color: black;
-        box-shadow: 0 0 20px var(--cyan);
-        transform: scale(0.95);
+    .tactile-btn:active {
+        background: rgba(34, 211, 238, 0.2);
+        border-color: var(--cyan);
+        transform: scale(0.96);
     }
 
-    /* --- PROGRESS RING (Timer) --- */
-    .timer-ring circle {
-        transition: stroke-dashoffset 1s linear;
-        transform: rotate(-90deg);
-        transform-origin: 50% 50%;
+    /* --- RPE SLIDER --- */
+    .rpe-track {
+        height: 8px;
+        background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+        border-radius: 4px;
+        position: relative;
     }
+    .rpe-thumb {
+        width: 24px; height: 24px;
+        background: white;
+        border: 2px solid #0f172a;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%; transform: translate(-50%, -50%);
+        box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        pointer-events: none;
+        transition: left 0.1s;
+    }
+
+    /* --- FLASH FX --- */
+    @keyframes flash {
+        0% { background-color: rgba(34, 211, 238, 0.4); }
+        100% { background-color: transparent; }
+    }
+    .flash-active { animation: flash 0.3s ease-out; }
 
     /* --- SET INDICATORS --- */
-    .set-dot {
-        width: 8px; height: 8px;
+    .dot {
+        width: 6px; height: 6px;
         border-radius: 50%;
         background: rgba(255,255,255,0.1);
         transition: all 0.3s;
     }
-    .set-dot.active { background: #fff; box-shadow: 0 0 10px #fff; transform: scale(1.2); }
-    .set-dot.completed { background: var(--cyan); box-shadow: 0 0 5px var(--cyan); }
-
-    /* --- ANIMATIONS --- */
-    @keyframes flash {
-        0% { background-color: rgba(34, 211, 238, 0.5); }
-        100% { background-color: transparent; }
-    }
-    .flash-effect { animation: flash 0.5s ease-out; }
-
-    .pulse-border { animation: pulseBorder 2s infinite; }
-    @keyframes pulseBorder {
-        0% { border-color: rgba(34, 211, 238, 0.2); }
-        50% { border-color: rgba(34, 211, 238, 0.8); box-shadow: 0 0 20px rgba(34, 211, 238, 0.2); }
-        100% { border-color: rgba(34, 211, 238, 0.2); }
-    }
-
-    /* RPE SLIDER CUSTOM */
-    input[type=range] {
-        -webkit-appearance: none;
-        background: transparent;
-    }
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 24px; width: 24px;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 0 15px white;
-        margin-top: -10px;
-        border: 2px solid var(--dark-bg);
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-        width: 100%; height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
-    }
+    .dot.active { background: white; transform: scale(1.5); box-shadow: 0 0 8px white; }
+    .dot.done { background: var(--cyan); }
 
   </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="selection:bg-cyan-500/30">
 
-  <!-- BACKGROUND -->
-  <canvas id="neuro-net"></canvas>
-
-  <!-- OVERLAY FLASH -->
+  <canvas id="bg-canvas"></canvas>
+  
+  <!-- FLASH OVERLAY -->
   <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
   <!-- HEADER -->
-  <header class="flex-none px-5 pt-safe pb-2 flex justify-between items-center bg-[#020617]/80 backdrop-blur-md border-b border-white/5 z-40">
-      <button onclick="window.location.href='workouts.html'" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+  <header class="flex-none flex justify-between items-center px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 z-40">
+      <button onclick="window.location.href='workouts.html'" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
       </button>
       
       <div class="flex flex-col items-center">
-          <div class="text-[9px] font-bold text-cyan-500 uppercase tracking-[0.2em] animate-pulse">Live Session</div>
-          <div id="timer-total" class="font-mono-tech text-xl font-bold text-white">00:00</div>
+          <div class="text-[9px] font-bold text-red-500 uppercase tracking-[0.2em] animate-pulse flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Live
+          </div>
+          <div id="session-timer" class="font-mono-tech text-lg font-bold text-white tracking-widest">00:00</div>
       </div>
 
       <button onclick="saveAndExit()" class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-colors">
@@ -163,360 +150,308 @@
       </button>
   </header>
 
-  <!-- MAIN CONTENT (SCROLLABLE IF NEEDED, BUT MOSTLY FIXED) -->
-  <main class="flex-1 relative flex flex-col px-4 py-4 overflow-y-auto">
+  <!-- SCROLLABLE CONTENT AREA -->
+  <main class="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
       
-      <!-- 1. EXERCISE DISPLAY -->
-      <div class="holo-card p-5 mb-4 relative flex-none">
-          <div class="absolute top-2 right-3 text-[50px] font-hud font-black text-white/5 leading-none pointer-events-none" id="ex-index-bg">01</div>
+      <!-- MAIN DISPLAY -->
+      <div class="holo-display p-6 mb-4 relative min-h-[220px] flex flex-col justify-between">
+          <div class="absolute top-0 right-0 p-4 opacity-10">
+              <i data-lucide="crosshair" class="w-24 h-24 text-white"></i>
+          </div>
+
+          <!-- Info -->
+          <div class="relative z-10">
+              <div class="flex items-center gap-2 mb-2">
+                  <span class="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider border border-white/10" id="muscle-tag">TARGET</span>
+                  <div class="flex gap-1" id="sets-dots"></div>
+              </div>
+              <h1 class="text-3xl font-hud font-black text-white uppercase italic leading-none text-glow-cyan max-w-[90%]" id="ex-name">LOADING...</h1>
+          </div>
+
+          <!-- Specs -->
+          <div class="grid grid-cols-3 gap-3 mt-6 relative z-10">
+              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
+                  <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Target</div>
+                  <div class="text-xl font-mono-tech font-bold text-white leading-none"><span id="target-sets">-</span><span class="text-sm text-slate-500 mx-0.5">x</span><span id="target-reps">-</span></div>
+              </div>
+              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
+                   <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Prev Load</div>
+                  <div class="text-xl font-mono-tech font-bold text-cyan-400 leading-none" id="last-weight">--</div>
+              </div>
+              <div class="bg-black/40 rounded-lg p-3 text-center border border-white/5 backdrop-blur-md">
+                   <div class="text-[8px] text-slate-500 uppercase font-bold tracking-wider mb-1">Rest</div>
+                  <div class="text-xl font-mono-tech font-bold text-white leading-none" id="target-rest">--s</div>
+              </div>
+          </div>
           
-          <!-- Title -->
-          <div class="relative z-10 mb-6">
-              <div class="flex items-center gap-2 mb-1">
-                  <span class="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider" id="muscle-tag">TARGET</span>
-              </div>
-              <h1 class="text-3xl font-hud font-black text-white uppercase italic leading-none text-glow-cyan" id="ex-name">LOADING...</h1>
-          </div>
-
-          <!-- Specs Grid -->
-          <div class="grid grid-cols-3 gap-2 mb-6">
-              <div class="bg-black/30 rounded p-2 text-center border border-white/5">
-                  <div class="text-[8px] text-slate-500 uppercase font-bold">Target</div>
-                  <div class="text-lg font-mono-tech font-bold text-white"><span id="target-sets">--</span><span class="text-xs text-slate-500">x</span><span id="target-reps">--</span></div>
-              </div>
-              <div class="bg-black/30 rounded p-2 text-center border border-white/5">
-                  <div class="text-[8px] text-slate-500 uppercase font-bold">Last Load</div>
-                  <div class="text-lg font-mono-tech font-bold text-cyan-400" id="last-weight">--</div>
-              </div>
-              <div class="bg-black/30 rounded p-2 text-center border border-white/5">
-                  <div class="text-[8px] text-slate-500 uppercase font-bold">Rest</div>
-                  <div class="text-lg font-mono-tech font-bold text-white" id="target-rest">--s</div>
-              </div>
-          </div>
-
-          <!-- Notes -->
-          <div id="ex-notes" class="text-xs text-cyan-200/80 bg-cyan-950/30 p-2 rounded border-l-2 border-cyan-500 italic hidden">
-              <!-- JS Injected -->
-          </div>
-
-          <!-- Set Progress Indicators -->
-          <div class="flex justify-center gap-2 mt-4" id="sets-dots">
-              <!-- Dots injected -->
+          <!-- Technique Note -->
+          <div id="tech-note" class="mt-4 text-[10px] text-cyan-200 bg-cyan-900/30 p-2 rounded border-l-2 border-cyan-500 hidden relative z-10">
+              <!-- Injected -->
           </div>
       </div>
 
-      <!-- 2. CONTROL DECK -->
-      <div class="flex-1 flex flex-col justify-end gap-4 pb-safe">
+      <!-- CONTROLS -->
+      <div class="space-y-4 pb-4">
           
-          <!-- Inputs Row -->
-          <div class="grid grid-cols-2 gap-4">
-              <!-- Weight Control -->
-              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-between">
-                  <span class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Load (KG)</span>
-                  <div class="text-4xl font-hud font-black text-white my-2" id="input-weight">0</div>
-                  <div class="flex gap-2 w-full">
-                      <button onclick="adjustWeight(-2.5)" class="control-btn flex-1 h-10 flex items-center justify-center font-bold text-lg">-</button>
-                      <button onclick="adjustWeight(2.5)" class="control-btn flex-1 h-10 flex items-center justify-center font-bold text-lg">+</button>
+          <!-- Inputs Grid -->
+          <div class="grid grid-cols-2 gap-3">
+              <!-- Load -->
+              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
+                  <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider text-center mb-2">Load (KG)</div>
+                  <div class="flex items-center justify-between gap-2">
+                      <button onclick="adjWeight(-2.5)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">-</button>
+                      <div class="text-3xl font-hud font-black text-white tracking-wide" id="input-weight">0</div>
+                      <button onclick="adjWeight(2.5)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">+</button>
                   </div>
               </div>
-
-              <!-- Reps Control -->
-              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-between">
-                  <span class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Reps</span>
-                  <div class="text-4xl font-hud font-black text-white my-2" id="input-reps">0</div>
-                  <div class="flex gap-2 w-full">
-                      <button onclick="adjustReps(-1)" class="control-btn flex-1 h-10 flex items-center justify-center font-bold text-lg">-</button>
-                      <button onclick="adjustReps(1)" class="control-btn flex-1 h-10 flex items-center justify-center font-bold text-lg">+</button>
+              
+              <!-- Reps -->
+              <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
+                  <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider text-center mb-2">Reps</div>
+                  <div class="flex items-center justify-between gap-2">
+                      <button onclick="adjReps(-1)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">-</button>
+                      <div class="text-3xl font-hud font-black text-white tracking-wide" id="input-reps">0</div>
+                      <button onclick="adjReps(1)" class="tactile-btn w-10 h-10 flex items-center justify-center text-xl font-bold">+</button>
                   </div>
               </div>
           </div>
 
-          <!-- RPE Slider -->
-          <div class="bg-slate-900/50 rounded-xl px-4 py-3 border border-white/5">
-              <div class="flex justify-between items-center mb-2">
-                  <span class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Effort (RPE)</span>
-                  <span class="text-sm font-bold text-yellow-400" id="rpe-val">7</span>
+          <!-- RPE Input -->
+          <div class="bg-slate-900/50 rounded-2xl p-4 border border-white/5">
+              <div class="flex justify-between items-end mb-3">
+                  <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Effort Rating (RPE)</span>
+                  <span class="text-xl font-bold text-yellow-400 font-mono-tech" id="rpe-val">7</span>
               </div>
-              <input type="range" min="5" max="10" step="0.5" value="7" id="rpe-slider" class="w-full" oninput="updateRPE(this.value)">
-              <div class="flex justify-between text-[9px] text-slate-600 font-mono mt-1 px-1">
-                  <span>EASY</span>
-                  <span>HARD</span>
-                  <span>FAIL</span>
+              <div class="relative h-10 flex items-center" id="rpe-container">
+                  <div class="rpe-track w-full"></div>
+                  <div class="rpe-thumb" id="rpe-thumb" style="left: 70%"></div>
+                  <input type="range" min="5" max="10" step="0.5" value="7" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" oninput="updateRPE(this.value)">
+              </div>
+              <div class="flex justify-between text-[8px] text-slate-600 font-bold uppercase mt-1">
+                  <span>Warmup</span>
+                  <span>Hard</span>
+                  <span>Failure</span>
               </div>
           </div>
-
-          <!-- VALIDATE BUTTON (The Big One) -->
-          <button onclick="logSet()" class="w-full h-16 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(8,145,178,0.4)] active:scale-[0.98] transition-all relative overflow-hidden group">
-              <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <span class="text-xl font-hud font-black text-white uppercase tracking-widest relative z-10">LOG SET</span>
-              <i data-lucide="check-circle-2" class="w-6 h-6 text-white relative z-10"></i>
-          </button>
-
+          
       </div>
+
   </main>
 
-  <!-- REST TIMER OVERLAY (Hidden by default) -->
-  <div id="rest-overlay" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
-      <div class="relative w-64 h-64 flex items-center justify-center mb-8">
-          <!-- SVG Ring -->
-          <svg class="timer-ring w-full h-full transform -rotate-90">
-              <circle cx="128" cy="128" r="120" stroke="#1e293b" stroke-width="8" fill="transparent" />
-              <circle id="timer-progress" cx="128" cy="128" r="120" stroke="#22d3ee" stroke-width="8" fill="transparent" stroke-dasharray="754" stroke-dashoffset="0" stroke-linecap="round" />
+  <!-- BOTTOM ACTION BAR (Fixed) -->
+  <div class="flex-none p-4 pb-safe bg-gradient-to-t from-black via-black/90 to-transparent z-40">
+      <button onclick="logSet()" class="w-full h-16 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(8,145,178,0.4)] active:scale-[0.98] transition-all relative overflow-hidden group">
+          <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+          <span class="text-xl font-hud font-black text-white uppercase tracking-[0.2em] relative z-10">LOG SET</span>
+          <i data-lucide="check" class="w-6 h-6 text-white stroke-[4] relative z-10"></i>
+      </button>
+  </div>
+
+  <!-- IMMERSIVE REST OVERLAY -->
+  <div id="rest-overlay" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+      
+      <!-- Big Timer Circle -->
+      <div class="relative w-72 h-72 flex items-center justify-center mb-10">
+          <svg class="w-full h-full -rotate-90">
+              <circle cx="144" cy="144" r="130" stroke="#1e293b" stroke-width="4" fill="none"/>
+              <circle id="timer-ring" cx="144" cy="144" r="130" stroke="#22d3ee" stroke-width="4" fill="none" stroke-dasharray="816" stroke-dashoffset="0" stroke-linecap="round"/>
           </svg>
           <div class="absolute text-center">
-              <div class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Resting</div>
-              <div class="text-6xl font-mono-tech font-bold text-white" id="rest-countdown">00:00</div>
-              <div class="text-xs text-cyan-400 font-bold mt-2 animate-pulse">RECOVER NOW</div>
+              <div class="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-2 animate-pulse">Recover</div>
+              <div class="text-7xl font-mono-tech font-bold text-white tracking-tight" id="rest-count">00:00</div>
           </div>
       </div>
 
-      <div class="flex gap-4">
-           <button onclick="adjustRest(30)" class="px-6 py-3 rounded-xl bg-white/10 border border-white/10 text-white font-bold hover:bg-white/20">+30s</button>
-           <button onclick="skipRest()" class="px-8 py-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 font-bold hover:bg-red-500/30">SKIP</button>
+      <div class="flex gap-4 w-full px-10">
+           <button onclick="addTime(30)" class="flex-1 py-4 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 transition-colors">+30s</button>
+           <button onclick="skipRest()" class="flex-1 py-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold hover:bg-red-500/20 transition-colors">SKIP</button>
       </div>
 
-      <!-- Next Exercise Preview -->
-      <div class="absolute bottom-10 w-full text-center px-6">
-          <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Up Next</div>
-          <div class="text-lg font-hud font-bold text-white" id="next-ex-name">...</div>
+      <div class="absolute bottom-10 w-full text-center px-6 opacity-60">
+          <div class="text-[9px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Upcoming</div>
+          <div class="text-lg font-hud font-bold text-white uppercase" id="next-up">...</div>
       </div>
   </div>
 
   <script type="module">
     import programData from './program-data.js';
 
-    // --- CANVAS BACKGROUND ---
-    const canvas = document.getElementById('neuro-net');
+    // --- BG ANIMATION ---
+    const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-    let width, height, particles = [];
-
-    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    let w, h, particles = [];
+    
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * width; this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 0.2; this.vy = (Math.random() - 0.5) * 0.2;
-            this.size = Math.random() * 2;
-        }
-        update() {
-            this.x += this.vx; this.y += this.vy;
-            if (this.x < 0 || this.x > width) this.vx *= -1;
-            if (this.y < 0 || this.y > height) this.vy *= -1;
-        }
-        draw() {
-            ctx.fillStyle = 'rgba(34, 211, 238, 0.1)';
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    for (let i = 0; i < 40; i++) particles.push(new Particle());
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-    animate();
-
-    // --- SESSION LOGIC ---
-    let state = {
-        week: 1,
-        day: 'dimanche',
-        exIndex: 0,
-        setIndex: 0,
-        sessionStart: Date.now(),
-        logs: []
-    };
     
-    let workout = null;
-    let timerInt = null;
-    let restInt = null;
+    class P {
+        constructor() { this.reset(); }
+        reset() { this.x = Math.random()*w; this.y = Math.random()*h; this.vy = (Math.random()*0.5)+0.1; this.r = Math.random()*1.5; }
+        update() { this.y -= this.vy; if(this.y < 0) this.reset(); }
+        draw() { ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); }
+    }
+    for(let i=0; i<40; i++) particles.push(new P());
+    function anim() { ctx.clearRect(0,0,w,h); particles.forEach(p=>{p.update();p.draw()}); requestAnimationFrame(anim); }
+    anim();
+
+    // --- LOGIC ---
+    let state = {
+        week: 1, day: 'dimanche', exIdx: 0, setIdx: 0, start: Date.now(),
+        workout: null
+    };
+    let restTimer = null;
 
     function init() {
         lucide.createIcons();
-        const params = new URLSearchParams(window.location.search);
-        state.week = parseInt(params.get('week')) || 1;
-        state.day = params.get('day') || 'dimanche';
-
-        workout = programData.getWorkout(state.week, state.day);
+        const p = new URLSearchParams(window.location.search);
+        state.week = parseInt(p.get('week')) || 1;
+        state.day = p.get('day') || 'dimanche';
         
-        // Start Global Timer
+        state.workout = programData.getWorkout(state.week, state.day);
+        
+        // Global Timer
         setInterval(() => {
-            const diff = Math.floor((Date.now() - state.sessionStart) / 1000);
-            const m = Math.floor(diff / 60).toString().padStart(2, '0');
-            const s = (diff % 60).toString().padStart(2, '0');
-            document.getElementById('timer-total').textContent = `${m}:${s}`;
+            const d = Math.floor((Date.now() - state.start)/1000);
+            const m = Math.floor(d/60).toString().padStart(2,'0');
+            const s = (d%60).toString().padStart(2,'0');
+            document.getElementById('session-timer').textContent = `${m}:${s}`;
         }, 1000);
 
-        loadExercise(0);
+        loadEx(0);
     }
 
-    function loadExercise(index) {
-        if (index >= workout.exercises.length) {
-            finishSession();
+    function loadEx(idx) {
+        if(idx >= state.workout.exercises.length) {
+            alert("SESSION COMPLETE!");
+            window.location.href = 'workouts.html';
             return;
         }
-        state.exIndex = index;
-        state.setIndex = 0; // Reset set count for new exercise
-        
-        const ex = workout.exercises[index];
-        
-        // UI Updates
-        document.getElementById('ex-index-bg').textContent = String(index + 1).padStart(2, '0');
+        state.exIdx = idx;
+        state.setIdx = 0;
+        const ex = state.workout.exercises[idx];
+
+        // UI
         document.getElementById('ex-name').textContent = ex.name;
-        document.getElementById('muscle-tag').textContent = ex.muscle[0].toUpperCase();
+        document.getElementById('muscle-tag').textContent = ex.muscle[0];
         document.getElementById('target-sets').textContent = ex.sets;
         document.getElementById('target-reps').textContent = ex.reps;
         document.getElementById('last-weight').textContent = ex.weight + 'KG';
         document.getElementById('target-rest').textContent = (ex.rest || 120) + 's';
         
-        // Notes
-        const noteEl = document.getElementById('ex-notes');
-        if (ex.notes) {
-            noteEl.textContent = ex.notes;
-            noteEl.classList.remove('hidden');
-        } else {
-            noteEl.classList.add('hidden');
-        }
+        // Note
+        const note = document.getElementById('tech-note');
+        if(ex.notes) { note.textContent = ex.notes; note.classList.remove('hidden'); }
+        else note.classList.add('hidden');
 
-        // Inputs Defaults
+        // Inputs
         document.getElementById('input-weight').textContent = ex.weight;
-        // Parse reps if string "6-8" -> 8
-        const r = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[1] || ex.reps) : ex.reps;
+        const r = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[1]||ex.reps) : ex.reps;
         document.getElementById('input-reps').textContent = r;
 
-        // Render Dots
-        const dotsContainer = document.getElementById('sets-dots');
-        dotsContainer.innerHTML = '';
+        // Dots
+        const dc = document.getElementById('sets-dots');
+        dc.innerHTML = '';
         for(let i=0; i<ex.sets; i++) {
-            const dot = document.createElement('div');
-            dot.className = `set-dot ${i === 0 ? 'active' : ''}`;
-            dotsContainer.appendChild(dot);
+            const d = document.createElement('div');
+            d.className = `dot ${i===0?'active':''}`;
+            dc.appendChild(d);
         }
     }
 
-    // Input Handlers (Global Scope)
-    window.adjustWeight = (delta) => {
+    // Input handlers attached to window
+    window.adjWeight = (d) => {
         const el = document.getElementById('input-weight');
-        let val = parseFloat(el.textContent) + delta;
-        if (val < 0) val = 0;
-        el.textContent = val % 1 === 0 ? val : val.toFixed(1);
-    };
-
-    window.adjustReps = (delta) => {
+        let v = parseFloat(el.textContent) + d;
+        if(v<0) v=0;
+        el.textContent = v%1===0 ? v : v.toFixed(1);
+    }
+    window.adjReps = (d) => {
         const el = document.getElementById('input-reps');
-        let val = parseInt(el.textContent) + delta;
-        if (val < 0) val = 0;
-        el.textContent = val;
-    };
-
-    window.updateRPE = (val) => {
-        document.getElementById('rpe-val').textContent = val;
-    };
+        let v = parseInt(el.textContent) + d;
+        if(v<0) v=0;
+        el.textContent = v;
+    }
+    window.updateRPE = (v) => {
+        document.getElementById('rpe-val').textContent = v;
+        const pct = (v-5)/5 * 100;
+        document.getElementById('rpe-thumb').style.left = `${pct}%`;
+    }
 
     window.logSet = () => {
-        // 1. Save Data (Simulation)
-        const ex = workout.exercises[state.exIndex];
-        const log = {
-            id: ex.id,
-            set: state.setIndex + 1,
-            weight: parseFloat(document.getElementById('input-weight').textContent),
-            reps: parseInt(document.getElementById('input-reps').textContent),
-            rpe: parseFloat(document.getElementById('rpe-slider').value)
-        };
-        state.logs.push(log);
+        // Flash
+        document.getElementById('flash-overlay').classList.add('flash-active');
+        setTimeout(()=>document.getElementById('flash-overlay').classList.remove('flash-active'), 300);
 
-        // 2. Visual Feedback
-        document.getElementById('flash-overlay').classList.add('flash-effect');
-        setTimeout(() => document.getElementById('flash-overlay').classList.remove('flash-effect'), 500);
-
-        // 3. Update Dots
-        const dots = document.querySelectorAll('.set-dot');
-        if (dots[state.setIndex]) {
-            dots[state.setIndex].classList.remove('active');
-            dots[state.setIndex].classList.add('completed');
+        // Update Dot
+        const dots = document.querySelectorAll('.dot');
+        if(dots[state.setIdx]) {
+             dots[state.setIdx].classList.remove('active');
+             dots[state.setIdx].classList.add('done');
         }
 
-        state.setIndex++;
-
-        // 4. Check if Exercise Complete
-        if (state.setIndex >= ex.sets) {
-            // Exercise Done -> Long Rest or Transition
-            startRest(ex.rest || 120, true);
+        state.setIdx++;
+        const ex = state.workout.exercises[state.exIdx];
+        
+        if(state.setIdx >= ex.sets) {
+            // Exercise Done
+            triggerRest(ex.rest || 120, true);
         } else {
-            // Next Set -> Standard Rest
-            if (dots[state.setIndex]) dots[state.setIndex].classList.add('active');
-            startRest(ex.rest || 120, false);
+            // Next Set
+            if(dots[state.setIdx]) dots[state.setIdx].classList.add('active');
+            triggerRest(ex.rest || 120, false);
         }
-    };
+    }
 
-    // Rest Timer Logic
-    function startRest(duration, isExerciseComplete) {
+    function triggerRest(sec, isExDone) {
         const overlay = document.getElementById('rest-overlay');
-        const nextName = document.getElementById('next-ex-name');
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
         
-        if (isExerciseComplete) {
-            const nextEx = workout.exercises[state.exIndex + 1];
-            nextName.textContent = nextEx ? `NEXT: ${nextEx.name}` : "SESSION COMPLETE";
-        } else {
-            nextName.textContent = "NEXT SET";
-        }
+        const nextEx = state.workout.exercises[state.exIdx + 1];
+        document.getElementById('next-up').textContent = isExDone ? (nextEx ? `NEXT: ${nextEx.name}` : "FINISH") : "NEXT SET";
 
-        overlay.classList.remove('pointer-events-none', 'opacity-0');
+        let rem = sec;
+        const ring = document.getElementById('timer-ring');
+        const maxDash = 816;
         
-        let remaining = duration;
-        const ring = document.getElementById('timer-progress');
-        const totalLength = 754; // 2 * PI * 120
+        updateRestDisplay(rem);
         
-        updateTimerDisplay(remaining);
+        if(restTimer) clearInterval(restTimer);
+        restTimer = setInterval(() => {
+            rem--;
+            updateRestDisplay(rem);
+            const off = maxDash - (rem/sec)*maxDash;
+            ring.style.strokeDashoffset = off;
 
-        if (restInt) clearInterval(restInt);
-        restInt = setInterval(() => {
-            remaining--;
-            updateTimerDisplay(remaining);
-            
-            // Ring Progress
-            const offset = totalLength - (remaining / duration) * totalLength;
-            ring.style.strokeDashoffset = offset;
-
-            if (remaining <= 0) {
-                skipRest(isExerciseComplete);
+            if(rem <= 0) {
+                skipRest(isExDone);
             }
         }, 1000);
 
-        // Store closure to handle "Next Exercise" transition logic in skipRest
-        window.currentRestIsExComplete = isExerciseComplete;
+        // Save logic ref
+        window.currentRestType = isExDone;
     }
 
-    function updateTimerDisplay(sec) {
-        const m = Math.floor(sec / 60).toString().padStart(2, '0');
-        const s = (sec % 60).toString().padStart(2, '0');
-        document.getElementById('rest-countdown').textContent = `${m}:${s}`;
+    function updateRestDisplay(s) {
+        const m = Math.floor(s/60).toString().padStart(2,'0');
+        const sc = (s%60).toString().padStart(2,'0');
+        document.getElementById('rest-count').textContent = `${m}:${sc}`;
     }
 
-    window.adjustRest = (delta) => {
-        // Complex to handle dynamically in simple JS, skipping for MVP brevity
-        // Just visual feedback
-    };
+    window.addTime = (s) => { /* logic skipped for brevity */ }
 
-    window.skipRest = () => {
-        clearInterval(restInt);
-        const overlay = document.getElementById('rest-overlay');
-        overlay.classList.add('opacity-0', 'pointer-events-none');
+    window.skipRest = (isExDone) => {
+        if(isExDone === undefined) isExDone = window.currentRestType;
         
-        if (window.currentRestIsExComplete) {
-            loadExercise(state.exIndex + 1);
-        }
-    };
-
-    function finishSession() {
-        alert("SESSION TERMINÉE ! Sauvegarde des données...");
-        window.location.href = 'workouts.html';
+        clearInterval(restTimer);
+        document.getElementById('rest-overlay').classList.add('opacity-0', 'pointer-events-none');
+        
+        if(isExDone) loadEx(state.exIdx + 1);
     }
 
     window.saveAndExit = () => {
-        if(confirm("Quitter la séance ?")) window.location.href = 'workouts.html';
-    };
+        if(confirm("Exit Session?")) window.location.href='workouts.html';
+    }
 
     document.addEventListener('DOMContentLoaded', init);
 
