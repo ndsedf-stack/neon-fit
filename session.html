@@ -153,10 +153,13 @@
 
           <!-- TOP INTEL -->
           <div class="absolute top-4 left-4 right-4 space-y-2 pointer-events-none">
-               <div id="superset-badge" class="hidden rounded-lg p-2 border border-dashed border-[var(--magenta)] bg-[rgba(255,45,149,0.1)] flex items-center gap-2 backdrop-blur-md">
-                    <i data-lucide="link" class="w-4 h-4 text-[var(--magenta)]"></i>
+               <!-- SUPERSET BADGE ENRICHED -->
+               <div id="superset-badge" class="hidden rounded-lg p-2 border border-[var(--magenta)] bg-gradient-to-r from-[rgba(255,45,149,0.2)] to-transparent flex items-center gap-3 backdrop-blur-md shadow-[0_0_15px_rgba(255,45,149,0.3)]">
+                    <div class="w-8 h-8 rounded-full bg-[var(--magenta)] flex items-center justify-center animate-pulse">
+                        <i data-lucide="link" class="w-4 h-4 text-white"></i>
+                    </div>
                     <div class="flex flex-col">
-                        <span class="text-[9px] font-bold text-[var(--magenta)] uppercase tracking-widest">EN SUPERSET AVEC</span>
+                        <span class="text-[9px] font-bold text-[var(--magenta)] uppercase tracking-widest">SUPERSET ACTIF</span>
                         <span class="text-xs text-white font-bold leading-none" id="superset-name">--</span>
                     </div>
                </div>
