@@ -3,339 +3,364 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>NEON FIT // OPÉRATIONS</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>HYBRID 63 // OPS</title>
   
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;500;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
     :root {
-      --cyan: #00eaff;
-      --magenta: #ff2d95;
-      --dark-bg: #050510;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.1);
+      --dark-bg: #020617;
+      --card-bg: #0f172a;
     }
+
     body {
       background-color: var(--dark-bg);
       font-family: 'Inter', sans-serif;
-      color: white;
+      color: #e2e8f0;
+      /* Smooth scroll & safe areas */
+      padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
+      overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
+
+    /* --- CANVAS BACKGROUND --- */
+    #neuro-net {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: -2;
+        background: radial-gradient(circle at 50% 30%, #172554 0%, #020617 70%);
+    }
+
+    /* --- TYPOGRAPHY --- */
     .font-hud { font-family: 'Rajdhani', sans-serif; }
-    
-    /* Timeline Scroll */
+    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+    .text-glow { text-shadow: 0 0 12px rgba(34, 211, 238, 0.5); }
+
+    /* --- 3D TIMELINE --- */
     .timeline-container {
         display: flex;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
-        padding: 0 20px;
+        padding: 20px 50% 20px 20px; /* Center alignment padding */
         gap: 12px;
         scrollbar-width: none;
-        margin-bottom: 12px;
-        -webkit-overflow-scrolling: touch;
+        mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
     }
     .timeline-container::-webkit-scrollbar { display: none; }
+
     .week-chip {
         scroll-snap-align: center;
-        flex: 0 0 auto;
-        width: 60px;
-        height: 70px;
-        background: rgba(255,255,255,0.05);
+        flex: 0 0 64px;
+        height: 80px;
+        background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 16px;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        transform: translateZ(0);
-        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        backdrop-filter: blur(5px);
     }
-    .week-chip:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+
     .week-chip.active {
-        background: rgba(0, 234, 255, 0.1);
+        background: rgba(34, 211, 238, 0.1);
         border-color: var(--cyan);
-        box-shadow: 0 0 15px rgba(0, 234, 255, 0.2);
+        transform: scale(1.15);
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+        z-index: 10;
+        color: white;
+    }
+    
+    .week-chip.deload { border-color: #f59e0b; }
+    .week-chip.deload.active { background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+
+    /* --- MISSION CARD --- */
+    .mission-card {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        transition: transform 0.2s;
+    }
+    .mission-card:active { transform: scale(0.98); }
+    
+    /* Decoration Line */
+    .mission-card::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0; width: 4px;
+        background: var(--cyan);
+        opacity: 0.5;
     }
 
-    /* iPhone optimized touch feedback */
-    .touch-pop {
-        transition: transform 0.1s, filter 0.1s;
-        transform: translateZ(0);
-        cursor: pointer;
+    /* --- BOTTOM NAV --- */
+    .nav-dock {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        height: 70px;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 24px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 50;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
-    .touch-pop:active {
-        transform: scale(0.97);
-        filter: brightness(1.3);
+    
+    .nav-item {
+        color: #64748b;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
     }
+    .nav-item.active { color: var(--cyan); transform: translateY(-2px); }
+    .nav-item.active svg { filter: drop-shadow(0 0 8px var(--cyan)); }
 
-    /* Sheen Effect */
-    .card-sheen { position: relative; overflow: hidden; }
-    .card-sheen::after {
-        content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-        transform: skewX(-25deg); transition: left 0.5s; pointer-events: none;
-    }
-    .card-sheen:active::after { left: 150%; transition: left 0.3s; }
-
-    /* STAGGERED ANIMATIONS */
-    @keyframes slideUpFade {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-entry {
-        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        opacity: 0;
-    }
-
-    /* MODAL */
-    .modal-overlay {
-        position: fixed; inset: 0; z-index: 100;
-        background: rgba(5, 5, 16, 0.95);
-        backdrop-filter: blur(10px);
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal-content {
-        width: 90%; max-height: 80vh; overflow-y: auto;
-        background: #0f0f20; border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 24px; padding: 20px;
-        transform: scale(0.9); transition: transform 0.3s;
-    }
-    .modal-overlay.open .modal-content { transform: scale(1); }
   </style>
 </head>
-<body class="antialiased pb-24">
-  <script>document.addEventListener("touchstart", function(){}, true);</script>
+<body class="antialiased">
 
-  <!-- HEADER (Fixed Top) -->
-  <header class="fixed top-0 w-full z-40 bg-[#050510]/95 backdrop-blur-md border-b border-white/10 pt-safe pb-4 shadow-2xl">
-      <!-- Top Row -->
-      <div class="px-4 h-12 flex items-center justify-between mb-4 mt-2">
-          <h1 class="text-xl font-hud font-black text-white italic tracking-wider">OPÉRATIONS TACTIQUES</h1>
-          <button onclick="window.location.href='index.html'" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 touch-pop border border-white/10">
-              <i data-lucide="x" class="w-5 h-5"></i>
+  <canvas id="neuro-net"></canvas>
+
+  <!-- HEADER -->
+  <header class="fixed top-0 w-full z-40 bg-[#020617]/90 backdrop-blur-md border-b border-white/5 pt-safe">
+      <div class="flex justify-between items-center px-6 h-16">
+          <div>
+              <div class="flex items-center gap-1.5 mb-0.5">
+                   <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                   <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono-tech">COMMAND CENTER</span>
+              </div>
+              <h1 class="text-xl font-hud font-black text-white italic tracking-wide">
+                  TRAINING_OPS
+              </h1>
+          </div>
+          
+          <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 active:bg-white/10">
+              <i data-lucide="home" class="w-5 h-5"></i>
           </button>
       </div>
       
-      <!-- 3D TIMELINE -->
-      <div class="timeline-container" id="timeline">
-          <!-- JS Injected -->
-      </div>
-      
-      <!-- FILTERS -->
-      <div class="flex gap-2 px-4 py-2 overflow-x-auto border-t border-white/5 pt-3 mt-1 scrollbar-hide">
-          <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[var(--cyan)]/20 border border-[var(--cyan)]/50 text-[10px] font-bold text-[var(--cyan)] uppercase touch-pop shadow-[0_0_10px_rgba(0,234,255,0.2)]">TOUT</button>
-          <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase touch-pop">FORCE</button>
-          <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase touch-pop">HYBRIDE</button>
+      <!-- TIMELINE -->
+      <div class="timeline-container pb-4 pt-2" id="timeline">
+          <!-- JS Generated -->
       </div>
   </header>
 
-  <!-- Padded Main Content (CORRECTION OVERLAP) -->
-  <main class="pt-[230px] px-4 space-y-6">
-
-      <!-- TROPHIES SECTION -->
-      <section class="animate-entry" style="animation-delay: 0s;">
-          <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 pl-1">Succès Récents</h2>
-          <div class="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-              <div class="flex-shrink-0 w-32 bg-[#0a0a1a] border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 touch-pop">
-                  <i data-lucide="medal" class="w-8 h-8 text-yellow-500 drop-shadow-md"></i>
-                  <div class="text-[10px] text-center font-bold">Premier Sang</div>
-                  <div class="text-[8px] text-slate-500">1ère Séance</div>
+  <!-- CONTENT -->
+  <main class="relative z-10 pt-[160px] pb-32 px-5 space-y-5">
+      
+      <!-- INTEL PANEL -->
+      <section class="relative rounded-2xl bg-gradient-to-r from-blue-900/20 to-slate-900/20 border border-white/10 p-5 overflow-hidden">
+          <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 mix-blend-overlay"></div>
+          
+          <div class="relative z-10">
+              <div class="flex justify-between items-start mb-4">
+                  <div>
+                      <div class="text-[9px] text-cyan-500 font-bold uppercase tracking-widest mb-1">Active Protocol</div>
+                      <h2 class="text-2xl font-hud font-black text-white uppercase text-glow leading-none" id="block-title">LOADING</h2>
+                  </div>
+                  <div class="text-right">
+                      <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">RPE Target</div>
+                      <div class="text-2xl font-mono-tech font-bold text-yellow-400" id="rpe-val">--</div>
+                  </div>
               </div>
-              <div class="flex-shrink-0 w-32 bg-[#0a0a1a] border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 touch-pop">
-                  <i data-lucide="dumbbell" class="w-8 h-8 text-slate-600"></i>
-                  <div class="text-[10px] text-center font-bold text-slate-500">Poids Lourd</div>
-                  <div class="text-[8px] text-slate-600">???</div>
-              </div>
-              <div class="flex-shrink-0 w-32 bg-[#0a0a1a] border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 touch-pop">
-                  <i data-lucide="flame" class="w-8 h-8 text-slate-600"></i>
-                  <div class="text-[10px] text-center font-bold text-slate-500">Inferno</div>
-                  <div class="text-[8px] text-slate-600">???</div>
+              
+              <div class="flex items-center gap-3 bg-black/30 p-2 rounded-lg border border-white/5">
+                  <div class="p-1.5 bg-cyan-500/10 rounded">
+                      <i data-lucide="zap" class="w-4 h-4 text-cyan-400"></i>
+                  </div>
+                  <div>
+                      <div class="text-[8px] text-slate-500 uppercase font-bold">Technique</div>
+                      <div class="text-xs font-bold text-white uppercase" id="tech-val">---</div>
+                  </div>
               </div>
           </div>
       </section>
 
-      <!-- WORKOUT LIST -->
-      <section id="workouts-container" class="space-y-4">
-          <!-- Injected by JS -->
-      </section>
+      <!-- WORKOUTS LIST -->
+      <div id="workouts-list" class="space-y-4">
+          <!-- JS Injected -->
+      </div>
 
   </main>
 
-  <!-- DETAILS MODAL -->
-  <div id="details-modal" class="modal-overlay">
-      <div class="modal-content">
-          <div class="flex justify-between items-start mb-4">
-              <div>
-                  <h3 class="text-2xl font-hud font-black text-white uppercase italic" id="modal-title">TITRE</h3>
-                  <div class="text-xs font-bold text-[var(--cyan)]" id="modal-subtitle">SUBTITLE</div>
-              </div>
-              <button onclick="closeModal()" class="p-2 bg-white/10 rounded-full touch-pop"><i data-lucide="x" class="w-5 h-5"></i></button>
-          </div>
-          <div id="modal-body" class="space-y-3">
-              <!-- Exercises injected here -->
-          </div>
-          <div class="mt-6">
-              <button id="modal-start-btn" class="w-full py-4 bg-[var(--cyan)] text-black font-black font-hud text-xl uppercase rounded-xl shadow-[0_0_20px_rgba(0,234,255,0.4)] touch-pop">
-                  LANCER LA MISSION
-              </button>
-          </div>
-      </div>
-  </div>
+  <!-- DOCK -->
+  <nav class="nav-dock">
+      <button class="nav-item active">
+          <i data-lucide="crosshair" class="w-6 h-6"></i>
+      </button>
+      <button class="nav-item">
+          <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+      </button>
+      <div class="w-px h-8 bg-white/10"></div>
+      <button class="nav-item">
+          <i data-lucide="calendar" class="w-6 h-6"></i>
+      </button>
+      <button class="nav-item">
+          <i data-lucide="user" class="w-6 h-6"></i>
+      </button>
+  </nav>
 
   <script type="module">
     import programData from './program-data.js';
 
-    // State
-    let currentWeek = parseInt(localStorage.getItem('hybrid_current_week') || 1);
+    // --- CANVAS ---
+    const canvas = document.getElementById('neuro-net');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    function resize() { w=canvas.width=window.innerWidth; h=canvas.height=window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    
+    // Simple Particles
+    const parts = Array(30).fill().map(()=>({
+        x: Math.random()*w, y: Math.random()*h, 
+        vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2,
+        s: Math.random()*2
+    }));
+    function anim() {
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle='rgba(255,255,255,0.05)';
+        parts.forEach(p=>{
+            p.x+=p.vx; p.y+=p.vy;
+            if(p.x<0||p.x>w) p.vx*=-1; if(p.y<0||p.y>h) p.vy*=-1;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2); ctx.fill();
+        });
+        requestAnimationFrame(anim);
+    }
+    anim();
 
-    function initOps() {
-        lucide.createIcons();
+    // --- LOGIC ---
+    let currentWeek = 1;
+
+    // GLOBAL FUNCTIONS FOR HTML BUTTONS
+    window.selectWeek = (wk) => {
+        currentWeek = wk;
         renderTimeline();
-        renderWorkouts(currentWeek);
+        renderView();
+    };
+
+    window.goToSession = (wk, day) => {
+        // Direct link with parameters
+        window.location.href = `session.html?week=${wk}&day=${day}`;
+    };
+
+    function init() {
+        renderTimeline();
+        renderView();
+        lucide.createIcons();
     }
 
     function renderTimeline() {
-        const container = document.getElementById('timeline');
-        container.innerHTML = '';
+        const cont = document.getElementById('timeline');
+        cont.innerHTML = '';
         
-        for(let i=1; i<=12; i++) { 
-            const chip = document.createElement('div');
-            chip.className = `week-chip ${i === currentWeek ? 'active' : ''} animate-entry`;
-            chip.style.animationDelay = `${i * 0.05}s`;
-            chip.onclick = () => {
-                currentWeek = i;
-                localStorage.setItem('hybrid_current_week', i);
-                renderTimeline();
-                renderWorkouts(i);
-            };
-            
-            chip.innerHTML = `
-                <span class="text-[8px] font-bold text-slate-500 uppercase">SEM</span>
-                <span class="text-xl font-hud font-bold text-white">${i}</span>
+        for(let i=1; i<=26; i++) {
+            const isDeload = programData.isDeloadWeek(i);
+            const el = document.createElement('button');
+            el.className = `week-chip ${i===currentWeek ? 'active' : ''} ${isDeload ? 'deload' : ''}`;
+            el.onclick = () => window.selectWeek(i);
+            el.innerHTML = `
+                <span class="text-[9px] font-bold uppercase ${isDeload?'text-orange-400':'text-slate-500'}">WK</span>
+                <span class="text-2xl font-hud font-bold ${isDeload?'text-orange-100':'text-white'}">${i}</span>
             `;
-            container.appendChild(chip);
+            cont.appendChild(el);
+            
+            // Auto scroll to active
+            if(i === currentWeek) {
+                setTimeout(() => el.scrollIntoView({ behavior:'smooth', inline:'center' }), 100);
+            }
         }
     }
 
-    function renderWorkouts(week) {
-        const container = document.getElementById('workouts-container');
-        container.innerHTML = '';
+    function renderView() {
+        const weekData = programData.getWeek(currentWeek);
+        const blockName = programData.info.blockTechniques[`block${weekData.block}`]?.name || 'Unknown';
         
-        const weekData = programData.getWeek(week);
-        const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+        document.getElementById('block-title').textContent = blockName;
+        document.getElementById('rpe-val').textContent = weekData.rpeTarget;
+        document.getElementById('tech-val').textContent = weekData.technique;
 
-        const dayMeta = {
-          'dimanche': { type: 'HYBRIDE', color: 'text-[var(--cyan)]', bg: 'bg-[var(--cyan)]/10', border: 'border-[var(--cyan)]/30', icon: 'zap' },
-          'mardi': { type: 'FORCE', color: 'text-[var(--magenta)]', bg: 'bg-[var(--magenta)]/10', border: 'border-[var(--magenta)]/30', icon: 'dumbbell' },
-          'vendredi': { type: 'HYBRIDE', color: 'text-[var(--cyan)]', bg: 'bg-[var(--cyan)]/10', border: 'border-[var(--cyan)]/30', icon: 'activity' },
-          'maison': { type: 'ACC.', color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-700', icon: 'home' }
+        const list = document.getElementById('workouts-list');
+        list.innerHTML = '';
+
+        const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+        const meta = {
+            'dimanche': { l: 'FULL BODY', c: 'cyan', icon: 'dumbbell' },
+            'mardi': { l: 'UPPER BODY', c: 'violet', icon: 'layers' },
+            'vendredi': { l: 'HYBRID', c: 'emerald', icon: 'zap' },
+            'maison': { l: 'HOME', c: 'amber', icon: 'home' }
         };
 
-        days.forEach((day, index) => {
-            const workout = weekData[day];
-            if(!workout) return;
-            const meta = dayMeta[day];
-
-            // Logic for status (simulated)
-            let statusHTML = '';
-            let activeClass = 'border-white/10';
-            if(index === 0) statusHTML = `<div class="ml-auto text-[9px] text-green-400 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> FINI</div>`;
-            if(index === 1) {
-                activeClass = 'border-[var(--cyan)] shadow-[0_0_10px_rgba(0,234,255,0.15)]';
-                statusHTML = `<div class="ml-auto text-[var(--cyan)] font-bold text-[9px] flex items-center gap-1 animate-pulse"><i data-lucide="crosshair" class="w-3 h-3"></i> PRÊT</div>`;
-            }
-
+        days.forEach(day => {
+            const wo = weekData[day];
+            if(!wo) return;
+            const m = meta[day];
+            
             const card = document.createElement('div');
-            card.className = `card-sheen bg-[#0f172a] ${activeClass} border rounded-2xl p-4 touch-pop active:bg-[#1e293b] animate-entry`;
-            card.style.animationDelay = `${0.1 + (index * 0.1)}s`; // Staggered
-            card.onclick = () => window.location.href = `session.html?week=${week}&day=${day}`;
+            card.className = "mission-card p-5 group";
+            card.onclick = () => window.goToSession(currentWeek, day);
             
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-4">
-                    <div class="w-12 h-12 rounded-xl ${meta.bg} border ${meta.border} flex items-center justify-center">
-                        <i data-lucide="${meta.icon}" class="w-6 h-6 ${meta.color}"></i>
-                    </div>
-                    <div class="flex-1 ml-4">
-                        <div class="flex items-center gap-2 mb-1">
-                             <span class="px-2 py-0.5 rounded bg-black/40 border border-white/10 text-[9px] font-bold ${meta.color}">${meta.type}</span>
-                             <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">${day.toUpperCase()}</span>
-                             ${statusHTML}
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-${m.c}-500/10 border border-${m.c}-500/30 flex items-center justify-center text-${m.c}-400">
+                            <i data-lucide="${m.icon}" class="w-6 h-6"></i>
                         </div>
-                        <h3 class="text-xl font-hud font-black text-white italic uppercase leading-none">${workout.name.split('+')[0]}</h3>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 uppercase">${m.l}</span>
+                                <span class="text-[9px] font-mono-tech text-slate-500">${wo.duration} MIN</span>
+                            </div>
+                            <h3 class="text-lg font-hud font-bold text-white uppercase leading-tight max-w-[180px]">${wo.name.split('+')[0]}</h3>
+                        </div>
                     </div>
-                    
-                    <!-- SCAN BUTTON -->
-                    <button class="scan-btn w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[var(--cyan)] hover:text-black transition-colors touch-pop border border-white/10" data-day="${day}">
-                        <i data-lucide="eye" class="w-5 h-5 pointer-events-none"></i>
-                    </button>
+                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-active:bg-${m.c}-500 group-active:text-black transition-colors">
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-active:text-black"></i>
+                    </div>
                 </div>
                 
-                <div class="flex items-center justify-between border-t border-white/5 pt-3">
-                    <div class="flex gap-4">
-                        <div>
-                            <div class="text-[8px] font-bold text-slate-500 uppercase">Durée</div>
-                            <div class="text-sm font-mono font-bold text-white">${workout.duration}m</div>
-                        </div>
-                        <div>
-                            <div class="text-[8px] font-bold text-slate-500 uppercase">Séries</div>
-                            <div class="text-sm font-mono font-bold text-white">${workout.totalSets}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                         <div class="text-[8px] font-bold text-slate-500 uppercase">XP Est.</div>
-                         <div class="text-sm font-bold text-[var(--magenta)] glow-text-magenta">+500</div>
+                <div class="pl-[64px] space-y-2">
+                    <div class="h-px w-full bg-white/5"></div>
+                    <div class="flex justify-between items-center text-xs">
+                         <div class="text-slate-400 font-mono-tech"><span class="text-white font-bold">${wo.totalSets}</span> SETS</div>
+                         <div class="text-slate-400 font-mono-tech"><span class="text-${m.c}-400 font-bold">${wo.exercises.length}</span> EXERCISES</div>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
-        });
-        
-        document.querySelectorAll('.scan-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openDetails(btn.dataset.day);
-            });
+            list.appendChild(card);
         });
         
         lucide.createIcons();
     }
 
-    // --- MODAL ---
-    window.openDetails = (day) => {
-        const workout = programData.getWorkout(currentWeek, day);
-        document.getElementById('modal-title').textContent = day.toUpperCase();
-        document.getElementById('modal-subtitle').textContent = workout.name;
-        
-        const list = document.getElementById('modal-body');
-        list.innerHTML = '';
-        
-        workout.exercises.forEach((ex, idx) => {
-            const item = document.createElement('div');
-            item.className = 'flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5';
-            item.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-xs font-bold text-slate-400">${idx+1}</div>
-                    <div>
-                        <div class="text-sm font-bold text-white">${ex.name}</div>
-                        <div class="text-[10px] text-slate-500 font-mono">${ex.sets}x${ex.reps} • ${ex.weight}kg</div>
-                    </div>
-                </div>
-            `;
-            list.appendChild(item);
-        });
-        
-        document.getElementById('modal-start-btn').onclick = () => window.location.href = `session.html?week=${currentWeek}&day=${day}`;
-        document.getElementById('details-modal').classList.add('open');
-    };
+    // Init
+    init();
 
-    window.closeModal = () => document.getElementById('details-modal').classList.remove('open');
-
-    initOps();
   </script>
 </body>
 </html>
