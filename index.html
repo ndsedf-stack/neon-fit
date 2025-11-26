@@ -28,7 +28,7 @@
     .font-hud { font-family: 'Rajdhani', sans-serif; }
     .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
     
-    /* Neon Glows */
+    /* Neon Glows & Textures */
     .glow-text-cyan { text-shadow: 0 0 10px rgba(0, 234, 255, 0.6); }
     .glow-text-magenta { text-shadow: 0 0 10px rgba(255, 45, 149, 0.6); }
     .glow-box { box-shadow: 0 0 20px rgba(0, 234, 255, 0.15); }
@@ -50,12 +50,45 @@
         background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050510 100%);
     }
 
-    /* Horizontal Scroll Snap */
-    .snap-x-mandatory {
-        scroll-snap-type: x mandatory;
+    /* --- IPHONE OPTIMIZED INTERACTIONS --- */
+    .touch-pop {
+        transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s;
+        will-change: transform;
     }
-    .snap-center {
-        scroll-snap-align: center;
+    .touch-pop:active {
+        transform: scale(0.96);
+        filter: brightness(1.3);
+    }
+    
+    /* Sheen Effect for Cards */
+    .card-sheen {
+        position: relative;
+        overflow: hidden;
+    }
+    .card-sheen::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -150%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: skewX(-25deg);
+        transition: left 0.5s;
+        pointer-events: none;
+    }
+    .card-sheen:active::after {
+        left: 150%;
+        transition: left 0.3s;
+    }
+
+    /* Halo Pulsing */
+    .halo-pulse-cyan {
+        box-shadow: 0 0 0 0 rgba(0, 234, 255, 0.7);
+        animation: pulseCyan 2s infinite;
+    }
+    @keyframes pulseCyan {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 234, 255, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 234, 255, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 234, 255, 0); }
     }
   </style>
 <script type="importmap">
@@ -77,7 +110,7 @@
       <div class="flex justify-between items-end mb-1">
           <div class="flex flex-col">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rang Opérateur</span>
-              <span class="text-sm font-hud font-bold text-white uppercase" id="user-rank">RECRUE</span>
+              <span class="text-sm font-hud font-bold text-white uppercase glow-text-cyan" id="user-rank">RECRUE</span>
           </div>
           <div class="text-right">
                <span class="text-xs font-mono-tech text-cyan-400" id="xp-display">0 / 1000 XP</span>
@@ -93,7 +126,7 @@
 
       <!-- HERO SECTION -->
       <section class="mt-4 mb-2 text-center">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-3 animate-bounce shadow-[0_0_15px_rgba(255,45,149,0.3)]">
               <span class="relative flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-magenta-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--magenta)]"></span>
@@ -109,36 +142,36 @@
       <!-- DASHBOARD GRID -->
       <div class="grid grid-cols-2 gap-3">
           <!-- Current Streak -->
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center glow-box backdrop-blur-sm">
-              <i data-lucide="flame" class="w-6 h-6 text-orange-500 mb-2"></i>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-sm touch-pop active:border-orange-500/50 active:shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+              <i data-lucide="flame" class="w-6 h-6 text-orange-500 mb-2 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]"></i>
               <div class="text-2xl font-mono-tech font-bold text-white">3</div>
               <div class="text-[9px] uppercase font-bold text-slate-500">Série Jours</div>
           </div>
           <!-- Level -->
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center glow-box backdrop-blur-sm">
-              <i data-lucide="award" class="w-6 h-6 text-[var(--cyan)] mb-2"></i>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-sm touch-pop active:border-cyan-500/50 active:shadow-[0_0_15px_rgba(0,234,255,0.3)]">
+              <i data-lucide="award" class="w-6 h-6 text-[var(--cyan)] mb-2 drop-shadow-[0_0_8px_rgba(0,234,255,0.8)]"></i>
               <div class="text-2xl font-mono-tech font-bold text-white" id="level-display">1</div>
               <div class="text-[9px] uppercase font-bold text-slate-500">Niveau Actuel</div>
           </div>
       </div>
 
-      <!-- WORKOUTS CAROUSEL -->
+      <!-- VERTICAL WORKOUT STACK (VERTICAL CARDS) -->
       <section>
-          <div class="flex items-center justify-between mb-3 px-1">
+          <div class="flex items-center justify-between mb-4 px-1">
               <h2 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
                   <i data-lucide="crosshair" class="w-4 h-4 text-[var(--cyan)]"></i>
                   MISSIONS SEMAINE <span id="week-num">01</span>
               </h2>
           </div>
           
-          <!-- Horizontal Scroll Container -->
-          <div class="flex overflow-x-auto snap-x-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-hide" id="workout-carousel">
+          <!-- Stack Container -->
+          <div class="flex flex-col gap-4" id="workout-stack">
               <!-- Cards Injected by JS -->
           </div>
       </section>
 
       <!-- STORYTELLING QUOTE -->
-      <div class="p-6 relative rounded-xl border border-white/5 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-md overflow-hidden">
+      <div class="p-6 relative rounded-xl border border-white/5 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-md overflow-hidden touch-pop">
           <div class="absolute -right-4 -top-4 opacity-10"><i data-lucide="quote" class="w-24 h-24 text-white"></i></div>
           <p class="relative z-10 font-hud text-lg italic text-slate-200 leading-tight">
               "On n'obtient pas ce que l'on souhaite. On obtient ce pour quoi on <span class="text-[var(--cyan)] font-bold">travaille</span>."
@@ -149,27 +182,27 @@
 
   <!-- BOTTOM NAV COCKPIT -->
   <nav class="fixed bottom-4 left-4 right-4 h-16 bg-[#0f0f20]/90 backdrop-blur-xl border border-white/10 rounded-2xl flex justify-around items-center z-50 shadow-2xl">
-      <button class="flex flex-col items-center gap-1 w-12 text-[var(--cyan)]">
+      <button class="flex flex-col items-center gap-1 w-12 text-[var(--cyan)] touch-pop">
           <i data-lucide="layout-grid" class="w-6 h-6 drop-shadow-[0_0_5px_rgba(0,234,255,0.8)]"></i>
           <span class="text-[8px] font-bold uppercase">QG</span>
       </button>
-      <button onclick="window.location.href='workouts.html'" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
+      <button onclick="window.location.href='workouts.html'" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors touch-pop">
           <i data-lucide="target" class="w-6 h-6"></i>
           <span class="text-[8px] font-bold uppercase">Ops</span>
       </button>
       
       <!-- FAB -->
       <div class="relative -top-6">
-          <button onclick="window.location.href='workouts.html'" class="w-14 h-14 rounded-full bg-gradient-to-tr from-[var(--magenta)] to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,45,149,0.6)] border-2 border-[#050510] transition-transform active:scale-95">
+          <button onclick="window.location.href='workouts.html'" class="halo-pulse-cyan w-14 h-14 rounded-full bg-gradient-to-tr from-[var(--magenta)] to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,45,149,0.6)] border-2 border-[#050510] transition-transform active:scale-90 touch-pop">
               <i data-lucide="zap" class="w-7 h-7 text-white fill-white"></i>
           </button>
       </div>
 
-      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
+      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors touch-pop">
           <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
           <span class="text-[8px] font-bold uppercase">Données</span>
       </button>
-      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
+      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors touch-pop">
           <i data-lucide="user-circle" class="w-6 h-6"></i>
           <span class="text-[8px] font-bold uppercase">Profil</span>
       </button>
@@ -203,7 +236,7 @@
         document.getElementById('xp-bar').style.width = `${progress}%`;
     }
 
-    // --- CAROUSEL LOGIC ---
+    // --- VERTICAL LIST LOGIC ---
     function initDashboard() {
         lucide.createIcons();
         loadGamification();
@@ -211,13 +244,21 @@
         const currentWeek = parseInt(localStorage.getItem('hybrid_current_week') || 1);
         document.getElementById('week-num').textContent = String(currentWeek).padStart(2, '0');
         
-        const container = document.getElementById('workout-carousel');
+        const container = document.getElementById('workout-stack');
         const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
         const weekData = programData.getWeek(currentWeek);
+
+        const dayMeta = {
+          'dimanche': { color: 'var(--cyan)', label: 'FORCE / HYBRIDE', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop' },
+          'mardi': { color: 'var(--magenta)', label: 'FORCE PUSH', img: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1470&auto=format&fit=crop' },
+          'vendredi': { color: 'var(--cyan)', label: 'HYBRIDE PULL', img: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1470&auto=format&fit=crop' },
+          'maison': { color: '#94a3b8', label: 'ACCESSOIRE', img: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=1470&auto=format&fit=crop' }
+        };
 
         days.forEach(day => {
             const workout = weekData[day];
             if(!workout) return;
+            const meta = dayMeta[day];
 
             // Calculate Volume
             let vol = 0;
@@ -226,49 +267,52 @@
                 vol += ex.sets * r * ex.weight;
             });
 
-            // Card HTML
+            // Vertical Card HTML
             const card = document.createElement('div');
-            card.className = "snap-center shrink-0 w-[85%] relative group cursor-pointer mission-card";
+            card.className = "card-sheen relative group cursor-pointer touch-pop rounded-xl overflow-hidden border border-white/10 bg-[#0a0a1a]";
+            card.style.height = "160px"; // Fixed height for consistency
+            
+            // Interaction: Click to Session
             card.onclick = () => window.location.href = `session.html?week=${currentWeek}&day=${day}`;
             
             card.innerHTML = `
-              <div class="absolute -inset-0.5 bg-gradient-to-r from-[var(--cyan)] to-[var(--magenta)] rounded-2xl opacity-75 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div class="relative bg-[#0a0a1a] rounded-xl p-0 overflow-hidden border border-white/10 h-full flex flex-col">
-                  
-                  <!-- Hero Image -->
-                  <div class="h-32 relative shrink-0">
-                      <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center opacity-60"></div>
-                      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/50 to-transparent"></div>
+              <!-- Background Image -->
+              <div class="absolute inset-0 bg-cover bg-center opacity-40 group-active:scale-105 transition-transform duration-700" style="background-image: url('${meta.img}')"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a1a] via-[#0a0a1a]/80 to-transparent"></div>
+              
+              <!-- Content -->
+              <div class="absolute inset-0 p-5 flex flex-col justify-between">
+                  <div class="flex justify-between items-start">
+                      <div>
+                          <span class="inline-block px-2 py-0.5 rounded bg-black/50 border border-white/20 text-[9px] font-bold text-white uppercase backdrop-blur-md mb-2 shadow-[0_0_10px_rgba(0,0,0,0.5)]" style="color: ${meta.color}; border-color: ${meta.color}">${meta.label}</span>
+                          <h3 class="text-2xl font-hud font-black text-white italic uppercase leading-none drop-shadow-lg">${day}</h3>
+                          <div class="text-sm text-slate-300 font-bold truncate max-w-[200px] mt-1">${workout.name.split('+')[0]}</div>
+                      </div>
                       
-                      <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
-                          <div>
-                              <div class="flex items-center gap-2 mb-1">
-                                  <span class="px-2 py-0.5 rounded bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-[9px] font-bold text-[var(--cyan)] uppercase">${day.toUpperCase()}</span>
-                              </div>
-                              <h3 class="text-xl font-hud font-black text-white leading-none italic uppercase truncate max-w-[200px]">${workout.name.split('+')[0]}</h3>
-                          </div>
-                          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_0_15px_white]">
-                              <i data-lucide="play" class="w-5 h-5 text-black fill-current ml-1"></i>
-                          </div>
+                      <!-- Go Button -->
+                      <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md group-active:bg-[var(--cyan)] group-active:text-black transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                          <i data-lucide="chevron-right" class="w-6 h-6 text-white group-active:text-black"></i>
                       </div>
                   </div>
 
-                  <!-- Data Footer -->
-                  <div class="grid grid-cols-3 divide-x divide-white/5 border-t border-white/5 bg-white/5 grow">
-                      <div class="p-3 text-center flex flex-col justify-center">
-                          <div class="text-[8px] uppercase text-slate-500 font-bold">Durée</div>
-                          <div class="text-sm font-bold text-white">${workout.duration} min</div>
+                  <!-- Footer Info -->
+                  <div class="flex gap-4 border-t border-white/10 pt-3 mt-2">
+                      <div>
+                           <div class="text-[9px] text-slate-500 uppercase font-bold">Durée</div>
+                           <div class="text-xs font-mono font-bold text-white flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-[var(--cyan)]"></i> ${workout.duration}m</div>
                       </div>
-                      <div class="p-3 text-center flex flex-col justify-center">
-                          <div class="text-[8px] uppercase text-slate-500 font-bold">Volume</div>
-                          <div class="text-sm font-bold text-white">${(vol/1000).toFixed(1)}t</div>
+                      <div>
+                           <div class="text-[9px] text-slate-500 uppercase font-bold">Volume</div>
+                           <div class="text-xs font-mono font-bold text-white flex items-center gap-1"><i data-lucide="dumbbell" class="w-3 h-3 text-[var(--magenta)]"></i> ${(vol/1000).toFixed(1)}t</div>
                       </div>
-                      <div class="p-3 text-center flex flex-col justify-center">
-                          <div class="text-[8px] uppercase text-slate-500 font-bold">XP</div>
-                          <div class="text-sm font-bold text-[var(--magenta)] glow-text-magenta">+500</div>
+                      <div class="ml-auto flex items-end">
+                           <span class="text-xs font-bold text-[var(--magenta)] glow-text-magenta">+500 XP</span>
                       </div>
                   </div>
               </div>
+              
+              <!-- Active Border -->
+              <div class="absolute inset-0 border-2 border-transparent group-active:border-[var(--cyan)] rounded-xl transition-colors pointer-events-none"></div>
             `;
             container.appendChild(card);
         });
