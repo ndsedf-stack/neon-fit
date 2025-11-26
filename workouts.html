@@ -80,6 +80,16 @@
     }
     .card-sheen:active::after { left: 150%; transition: left 0.3s; }
 
+    /* STAGGERED ANIMATIONS */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
     /* MODAL */
     .modal-overlay {
         position: fixed; inset: 0; z-index: 100;
@@ -128,7 +138,7 @@
   <main class="pt-[230px] px-4 space-y-6">
 
       <!-- TROPHIES SECTION -->
-      <section>
+      <section class="animate-entry" style="animation-delay: 0s;">
           <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 pl-1">Succès Récents</h2>
           <div class="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
               <div class="flex-shrink-0 w-32 bg-[#0a0a1a] border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 touch-pop">
@@ -195,7 +205,8 @@
         
         for(let i=1; i<=12; i++) { 
             const chip = document.createElement('div');
-            chip.className = `week-chip ${i === currentWeek ? 'active' : ''}`;
+            chip.className = `week-chip ${i === currentWeek ? 'active' : ''} animate-entry`;
+            chip.style.animationDelay = `${i * 0.05}s`;
             chip.onclick = () => {
                 currentWeek = i;
                 localStorage.setItem('hybrid_current_week', i);
@@ -225,13 +236,23 @@
           'maison': { type: 'ACC.', color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-700', icon: 'home' }
         };
 
-        days.forEach(day => {
+        days.forEach((day, index) => {
             const workout = weekData[day];
             if(!workout) return;
             const meta = dayMeta[day];
 
+            // Logic for status (simulated)
+            let statusHTML = '';
+            let activeClass = 'border-white/10';
+            if(index === 0) statusHTML = `<div class="ml-auto text-[9px] text-green-400 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> FINI</div>`;
+            if(index === 1) {
+                activeClass = 'border-[var(--cyan)] shadow-[0_0_10px_rgba(0,234,255,0.15)]';
+                statusHTML = `<div class="ml-auto text-[var(--cyan)] font-bold text-[9px] flex items-center gap-1 animate-pulse"><i data-lucide="crosshair" class="w-3 h-3"></i> PRÊT</div>`;
+            }
+
             const card = document.createElement('div');
-            card.className = "card-sheen bg-[#0f172a] border border-white/10 rounded-2xl p-4 touch-pop active:border-[var(--cyan)] active:bg-[#1e293b]";
+            card.className = `card-sheen bg-[#0f172a] ${activeClass} border rounded-2xl p-4 touch-pop active:bg-[#1e293b] animate-entry`;
+            card.style.animationDelay = `${0.1 + (index * 0.1)}s`; // Staggered
             card.onclick = () => window.location.href = `session.html?week=${week}&day=${day}`;
             
             card.innerHTML = `
@@ -243,6 +264,7 @@
                         <div class="flex items-center gap-2 mb-1">
                              <span class="px-2 py-0.5 rounded bg-black/40 border border-white/10 text-[9px] font-bold ${meta.color}">${meta.type}</span>
                              <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">${day.toUpperCase()}</span>
+                             ${statusHTML}
                         </div>
                         <h3 class="text-xl font-hud font-black text-white italic uppercase leading-none">${workout.name.split('+')[0]}</h3>
                     </div>
