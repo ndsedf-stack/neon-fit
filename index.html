@@ -35,6 +35,7 @@
       min-height: 100vh;
       padding-bottom: env(safe-area-inset-bottom);
       perspective: 1000px; /* Enable 3D space */
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* --- DYNAMIC CANVAS BACKGROUND --- */
@@ -255,7 +256,8 @@
               <span class="text-[9px] font-mono-tech text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30" id="mission-day">TODAY</span>
           </div>
 
-          <div class="quantum-card p-0 js-tilt group cursor-pointer" data-tilt-max="3" data-tilt-scale="1.02">
+          <!-- Added onClick to go to session -->
+          <div onclick="window.goToSession()" class="quantum-card p-0 js-tilt group cursor-pointer" data-tilt-max="3" data-tilt-scale="1.02">
               <div class="holo-border"></div>
               
               <div class="relative h-32 overflow-hidden">
@@ -342,6 +344,7 @@
   <!-- GLASS DOCK -->
   <nav class="fixed bottom-0 w-full glass-dock z-50">
       <div class="flex justify-around items-center h-[85px] px-2">
+          <!-- Active State for Home -->
           <button class="flex flex-col items-center gap-1.5 p-2 w-16 group text-cyan-400">
               <i data-lucide="layout-grid" class="w-6 h-6 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]"></i>
               <span class="text-[9px] font-bold uppercase tracking-wider">Deck</span>
@@ -354,12 +357,13 @@
           
           <!-- FAB -->
           <div class="relative -top-8">
-              <button class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_10px_30px_rgba(34,211,238,0.4)] border border-white/20 transform transition-all active:scale-95 group">
+              <button onclick="window.goToSession()" class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_10px_30px_rgba(34,211,238,0.4)] border border-white/20 transform transition-all active:scale-95 group">
                    <i data-lucide="plus" class="w-7 h-7 text-white stroke-[3] group-hover:rotate-90 transition-transform duration-300"></i>
               </button>
           </div>
 
-          <button class="flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
+          <!-- Linked to Workouts -->
+          <button onclick="window.location.href='workouts.html'" class="flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
               <i data-lucide="calendar" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
               <span class="text-[9px] font-bold uppercase tracking-wider">Ops</span>
           </button>
@@ -468,7 +472,13 @@
     });
 
     // --- DATA HYDRATION ---
+    // Default to Week 1, Sunday for demo purposes
     const STATE = { week: 1, day: 'dimanche' };
+
+    // Function to navigate to session
+    window.goToSession = () => {
+        window.location.href = `session.html?week=${STATE.week}&day=${STATE.day}`;
+    };
 
     function init() {
         lucide.createIcons();
