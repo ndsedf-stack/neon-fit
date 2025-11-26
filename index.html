@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>NEON FIT // DASHBOARD</title>
+  <title>NEON FIT // TACTICAL DASHBOARD</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;500;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -44,16 +44,18 @@
       animation: shimmer 3s infinite linear;
     }
 
-    /* Card Hover */
-    .mission-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .mission-card:active { transform: scale(0.98); }
-
     /* Canvas Background */
     #matrix-bg {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050510 100%);
+    }
+
+    /* Horizontal Scroll Snap */
+    .snap-x-mandatory {
+        scroll-snap-type: x mandatory;
+    }
+    .snap-center {
+        scroll-snap-align: center;
     }
   </style>
 <script type="importmap">
@@ -74,8 +76,8 @@
   <div class="fixed top-0 w-full z-50 bg-[#050510]/90 backdrop-blur-md border-b border-white/10 pt-safe px-4 pb-2">
       <div class="flex justify-between items-end mb-1">
           <div class="flex flex-col">
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Operator Rank</span>
-              <span class="text-sm font-hud font-bold text-white uppercase" id="user-rank">ROOKIE</span>
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rang Opérateur</span>
+              <span class="text-sm font-hud font-bold text-white uppercase" id="user-rank">RECRUE</span>
           </div>
           <div class="text-right">
                <span class="text-xs font-mono-tech text-cyan-400" id="xp-display">0 / 1000 XP</span>
@@ -96,12 +98,12 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-magenta-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--magenta)]"></span>
               </span>
-              <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300">System V2.0 Online</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300">Système V2.0 En Ligne</span>
           </div>
           <h1 class="text-4xl font-hud font-black text-white italic leading-none mb-1">
-              LEVEL UP YOUR <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--cyan)] to-[var(--magenta)] glow-text-cyan">FITNESS</span>
+              PASSEZ AU <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--cyan)] to-[var(--magenta)] glow-text-cyan">NIVEAU SUPÉRIEUR</span>
           </h1>
-          <p class="text-xs text-slate-400 max-w-[200px] mx-auto">Complete missions. Earn XP. Become Elite.</p>
+          <p class="text-xs text-slate-400 max-w-[250px] mx-auto">Accomplissez les missions. Gagnez de l'XP. Devenez une Élite.</p>
       </section>
 
       <!-- DASHBOARD GRID -->
@@ -110,54 +112,28 @@
           <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center glow-box backdrop-blur-sm">
               <i data-lucide="flame" class="w-6 h-6 text-orange-500 mb-2"></i>
               <div class="text-2xl font-mono-tech font-bold text-white">3</div>
-              <div class="text-[9px] uppercase font-bold text-slate-500">Day Streak</div>
+              <div class="text-[9px] uppercase font-bold text-slate-500">Série Jours</div>
           </div>
           <!-- Level -->
           <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center glow-box backdrop-blur-sm">
               <i data-lucide="award" class="w-6 h-6 text-[var(--cyan)] mb-2"></i>
               <div class="text-2xl font-mono-tech font-bold text-white" id="level-display">1</div>
-              <div class="text-[9px] uppercase font-bold text-slate-500">Current Level</div>
+              <div class="text-[9px] uppercase font-bold text-slate-500">Niveau Actuel</div>
           </div>
       </div>
 
-      <!-- NEXT MISSION CARD -->
-      <section class="relative group cursor-pointer mission-card" onclick="window.goToSession()">
-          <div class="absolute -inset-0.5 bg-gradient-to-r from-[var(--cyan)] to-[var(--magenta)] rounded-2xl opacity-75 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-          <div class="relative bg-[#0a0a1a] rounded-xl p-0 overflow-hidden border border-white/10">
-              
-              <!-- Hero Image -->
-              <div class="h-32 relative">
-                  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550345332-09e3ac987658?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-60"></div>
-                  <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/50 to-transparent"></div>
-                  
-                  <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
-                      <div>
-                          <div class="flex items-center gap-2 mb-1">
-                              <span class="px-2 py-0.5 rounded bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-[9px] font-bold text-[var(--cyan)] uppercase" id="mission-status">TODAY'S MISSION</span>
-                          </div>
-                          <h3 class="text-2xl font-hud font-black text-white leading-none italic uppercase" id="workout-name">LOADING...</h3>
-                      </div>
-                      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_0_15px_white]">
-                          <i data-lucide="play" class="w-5 h-5 text-black fill-current ml-1"></i>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- Data Footer -->
-              <div class="grid grid-cols-3 divide-x divide-white/5 border-t border-white/5 bg-white/5">
-                  <div class="p-3 text-center">
-                      <div class="text-[8px] uppercase text-slate-500 font-bold">Time</div>
-                      <div class="text-sm font-bold text-white" id="workout-time">-- min</div>
-                  </div>
-                  <div class="p-3 text-center">
-                      <div class="text-[8px] uppercase text-slate-500 font-bold">Volume</div>
-                      <div class="text-sm font-bold text-white" id="workout-volume">-- kg</div>
-                  </div>
-                  <div class="p-3 text-center">
-                      <div class="text-[8px] uppercase text-slate-500 font-bold">XP Reward</div>
-                      <div class="text-sm font-bold text-[var(--magenta)] glow-text-magenta">+500 XP</div>
-                  </div>
-              </div>
+      <!-- WORKOUTS CAROUSEL -->
+      <section>
+          <div class="flex items-center justify-between mb-3 px-1">
+              <h2 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <i data-lucide="crosshair" class="w-4 h-4 text-[var(--cyan)]"></i>
+                  MISSIONS SEMAINE <span id="week-num">01</span>
+              </h2>
+          </div>
+          
+          <!-- Horizontal Scroll Container -->
+          <div class="flex overflow-x-auto snap-x-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-hide" id="workout-carousel">
+              <!-- Cards Injected by JS -->
           </div>
       </section>
 
@@ -165,7 +141,7 @@
       <div class="p-6 relative rounded-xl border border-white/5 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-md overflow-hidden">
           <div class="absolute -right-4 -top-4 opacity-10"><i data-lucide="quote" class="w-24 h-24 text-white"></i></div>
           <p class="relative z-10 font-hud text-lg italic text-slate-200 leading-tight">
-              "You don't get what you wish for. You get what you <span class="text-[var(--cyan)] font-bold">work for</span>."
+              "On n'obtient pas ce que l'on souhaite. On obtient ce pour quoi on <span class="text-[var(--cyan)] font-bold">travaille</span>."
           </p>
       </div>
 
@@ -175,7 +151,7 @@
   <nav class="fixed bottom-4 left-4 right-4 h-16 bg-[#0f0f20]/90 backdrop-blur-xl border border-white/10 rounded-2xl flex justify-around items-center z-50 shadow-2xl">
       <button class="flex flex-col items-center gap-1 w-12 text-[var(--cyan)]">
           <i data-lucide="layout-grid" class="w-6 h-6 drop-shadow-[0_0_5px_rgba(0,234,255,0.8)]"></i>
-          <span class="text-[8px] font-bold uppercase">Deck</span>
+          <span class="text-[8px] font-bold uppercase">QG</span>
       </button>
       <button onclick="window.location.href='workouts.html'" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
           <i data-lucide="target" class="w-6 h-6"></i>
@@ -184,18 +160,18 @@
       
       <!-- FAB -->
       <div class="relative -top-6">
-          <button onclick="window.goToSession()" class="w-14 h-14 rounded-full bg-gradient-to-tr from-[var(--magenta)] to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,45,149,0.6)] border-2 border-[#050510] transition-transform active:scale-95">
+          <button onclick="window.location.href='workouts.html'" class="w-14 h-14 rounded-full bg-gradient-to-tr from-[var(--magenta)] to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,45,149,0.6)] border-2 border-[#050510] transition-transform active:scale-95">
               <i data-lucide="zap" class="w-7 h-7 text-white fill-white"></i>
           </button>
       </div>
 
-      <button onclick="alert('Stats coming soon')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
+      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
           <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
-          <span class="text-[8px] font-bold uppercase">Data</span>
+          <span class="text-[8px] font-bold uppercase">Données</span>
       </button>
-      <button onclick="alert('Profile coming soon')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
+      <button onclick="alert('Bientôt disponible')" class="flex flex-col items-center gap-1 w-12 text-slate-500 hover:text-white transition-colors">
           <i data-lucide="user-circle" class="w-6 h-6"></i>
-          <span class="text-[8px] font-bold uppercase">ID</span>
+          <span class="text-[8px] font-bold uppercase">Profil</span>
       </button>
   </nav>
 
@@ -204,7 +180,7 @@
 
     // --- GAMIFICATION LOGIC ---
     const XP_LEVELS = [0, 1000, 2500, 5000, 10000];
-    const RANKS = ["Rookie", "Soldier", "Veteran", "Elite", "Legend"];
+    const RANKS = ["Recrue", "Soldat", "Vétéran", "Élite", "Légende"];
     
     function loadGamification() {
         const xp = parseInt(localStorage.getItem('hybrid_xp') || '0');
@@ -227,32 +203,77 @@
         document.getElementById('xp-bar').style.width = `${progress}%`;
     }
 
-    // --- SESSION LOGIC ---
-    function init() {
+    // --- CAROUSEL LOGIC ---
+    function initDashboard() {
         lucide.createIcons();
         loadGamification();
         
-        // Simple logic for "Next Mission" (defaults to Week 1 Dimanche for demo)
-        // In a real app, this would check Date()
-        const week = parseInt(localStorage.getItem('hybrid_current_week') || 1);
-        const day = 'dimanche'; 
+        const currentWeek = parseInt(localStorage.getItem('hybrid_current_week') || 1);
+        document.getElementById('week-num').textContent = String(currentWeek).padStart(2, '0');
         
-        const workout = programData.getWorkout(week, day);
-        
-        document.getElementById('workout-name').textContent = workout.name.split('+')[0];
-        document.getElementById('workout-time').textContent = workout.duration + ' min';
-        
-        // Calculate volume
-        let vol = 0;
-        workout.exercises.forEach(ex => {
-             const r = typeof ex.reps === 'string' ? 8 : ex.reps;
-             vol += ex.sets * r * ex.weight;
-        });
-        document.getElementById('workout-volume').textContent = (vol/1000).toFixed(1) + 't';
+        const container = document.getElementById('workout-carousel');
+        const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+        const weekData = programData.getWeek(currentWeek);
 
-        window.goToSession = () => {
-            window.location.href = `session.html?week=${week}&day=${day}`;
-        };
+        days.forEach(day => {
+            const workout = weekData[day];
+            if(!workout) return;
+
+            // Calculate Volume
+            let vol = 0;
+            workout.exercises.forEach(ex => {
+                const r = typeof ex.reps === 'string' ? 8 : ex.reps;
+                vol += ex.sets * r * ex.weight;
+            });
+
+            // Card HTML
+            const card = document.createElement('div');
+            card.className = "snap-center shrink-0 w-[85%] relative group cursor-pointer mission-card";
+            card.onclick = () => window.location.href = `session.html?week=${currentWeek}&day=${day}`;
+            
+            card.innerHTML = `
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-[var(--cyan)] to-[var(--magenta)] rounded-2xl opacity-75 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div class="relative bg-[#0a0a1a] rounded-xl p-0 overflow-hidden border border-white/10 h-full flex flex-col">
+                  
+                  <!-- Hero Image -->
+                  <div class="h-32 relative shrink-0">
+                      <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center opacity-60"></div>
+                      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/50 to-transparent"></div>
+                      
+                      <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+                          <div>
+                              <div class="flex items-center gap-2 mb-1">
+                                  <span class="px-2 py-0.5 rounded bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-[9px] font-bold text-[var(--cyan)] uppercase">${day.toUpperCase()}</span>
+                              </div>
+                              <h3 class="text-xl font-hud font-black text-white leading-none italic uppercase truncate max-w-[200px]">${workout.name.split('+')[0]}</h3>
+                          </div>
+                          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_0_15px_white]">
+                              <i data-lucide="play" class="w-5 h-5 text-black fill-current ml-1"></i>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Data Footer -->
+                  <div class="grid grid-cols-3 divide-x divide-white/5 border-t border-white/5 bg-white/5 grow">
+                      <div class="p-3 text-center flex flex-col justify-center">
+                          <div class="text-[8px] uppercase text-slate-500 font-bold">Durée</div>
+                          <div class="text-sm font-bold text-white">${workout.duration} min</div>
+                      </div>
+                      <div class="p-3 text-center flex flex-col justify-center">
+                          <div class="text-[8px] uppercase text-slate-500 font-bold">Volume</div>
+                          <div class="text-sm font-bold text-white">${(vol/1000).toFixed(1)}t</div>
+                      </div>
+                      <div class="p-3 text-center flex flex-col justify-center">
+                          <div class="text-[8px] uppercase text-slate-500 font-bold">XP</div>
+                          <div class="text-sm font-bold text-[var(--magenta)] glow-text-magenta">+500</div>
+                      </div>
+                  </div>
+              </div>
+            `;
+            container.appendChild(card);
+        });
+        
+        lucide.createIcons();
     }
 
     // --- CANVAS ---
@@ -280,7 +301,7 @@
     }
     anim();
 
-    init();
+    initDashboard();
   </script>
 </body>
 </html>
