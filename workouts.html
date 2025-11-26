@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>HYBRID 63 // ARMORY</title>
+  <title>HYBRID 63 // COMMANDER</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,11 +19,13 @@
   <style>
     :root {
       --cyan: #22d3ee;
-      --cyan-glow: rgba(34, 211, 238, 0.6);
+      --cyan-glow: rgba(34, 211, 238, 0.5);
       --violet: #8b5cf6;
-      --violet-glow: rgba(139, 92, 246, 0.6);
+      --violet-glow: rgba(139, 92, 246, 0.5);
+      --red: #ef4444;
+      --orange: #f59e0b;
       --dark-bg: #020617;
-      --card-bg: rgba(10, 15, 30, 0.85);
+      --card-bg: rgba(10, 15, 30, 0.6);
     }
 
     body {
@@ -36,7 +38,7 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* --- DYNAMIC CANVAS BACKGROUND --- */
+    /* --- CANVAS BACKGROUND --- */
     #neuro-net {
         position: fixed;
         top: 0; left: 0;
@@ -45,135 +47,227 @@
         background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
     }
 
-    /* --- TYPOGRAPHY EFFECTS --- */
+    /* --- TYPOGRAPHY --- */
     .font-hud { font-family: 'Rajdhani', sans-serif; }
     .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
     
     .text-glow-cyan { text-shadow: 0 0 10px var(--cyan-glow); }
     .text-glow-violet { text-shadow: 0 0 10px var(--violet-glow); }
-    .text-glow-white { text-shadow: 0 0 15px rgba(255,255,255,0.4); }
+    .text-glow-orange { text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 
-    /* --- QUANTUM CARD STYLE --- */
-    .quantum-card {
+    /* --- TIMELINE SCROLLER --- */
+    .timeline-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 12px;
+        padding: 10px 20px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE */
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+    .timeline-container::-webkit-scrollbar { display: none; }
+
+    .week-chip {
+        flex: 0 0 auto;
+        scroll-snap-align: center;
+        width: 60px;
+        height: 70px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .week-chip.active {
+        background: rgba(34, 211, 238, 0.1);
+        border-color: var(--cyan);
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+        z-index: 10;
+    }
+    .week-chip.active .week-label { color: var(--cyan); }
+    .week-chip.active .week-num { color: white; text-shadow: 0 0 10px white; }
+
+    /* Deload Variant */
+    .week-chip.deload { border-color: rgba(245, 158, 11, 0.3); }
+    .week-chip.deload.active {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: var(--orange);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    .week-chip.deload .week-label { color: var(--orange); }
+
+    /* --- BLUEPRINT CARD --- */
+    .blueprint-card {
         background: var(--card-bg);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
+        border-radius: 4px; /* Tactical squared corners */
         position: relative;
         overflow: hidden;
+        /* Clip path for tech look */
+        clip-path: polygon(
+            0 0, 
+            100% 0, 
+            100% calc(100% - 20px), 
+            calc(100% - 20px) 100%, 
+            0 100%
+        );
         transition: all 0.3s ease;
     }
     
-    .quantum-card.expanded {
-        border-color: rgba(34, 211, 238, 0.3);
-        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    .blueprint-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 4px; height: 100%;
+        background: var(--cyan);
+        opacity: 0.5;
     }
 
-    /* Active Hologram Border */
-    .holo-border {
+    .blueprint-card.expanded {
+        border-color: rgba(34, 211, 238, 0.3);
+        background: rgba(10, 15, 30, 0.9);
+    }
+
+    /* Grid overlay on cards */
+    .grid-bg {
+        background-image: 
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 20px 20px;
         position: absolute;
         inset: 0;
-        border-radius: 20px;
-        padding: 1px;
-        background: linear-gradient(180deg, rgba(34,211,238,0.5), transparent, rgba(139,92,246,0.5));
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        opacity: 0.6;
         pointer-events: none;
     }
 
-    /* --- INPUT HUD STYLE --- */
-    .hud-input {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: white;
-        font-family: 'Share Tech Mono', monospace;
-        transition: all 0.3s;
+    /* --- EXERCISE ROW --- */
+    .ex-row {
+        border-left: 1px solid rgba(255,255,255,0.1);
+        margin-left: 10px;
+        padding-left: 15px;
+        position: relative;
+        padding-bottom: 20px;
     }
-    .hud-input:focus {
-        border-color: var(--cyan);
-        box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
-        outline: none;
+    .ex-row::before {
+        content: '';
+        position: absolute;
+        left: -4px; top: 8px;
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #0f172a;
+        border: 1px solid var(--cyan);
     }
+    .ex-row:last-child { border-left: none; }
 
-    /* --- FILTER CHIPS --- */
-    .filter-chip {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.3s;
-    }
-    .filter-chip.active {
-        background: rgba(34, 211, 238, 0.15);
-        border-color: var(--cyan);
-        color: var(--cyan);
-        box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
-    }
-
-    /* --- ACCORDION ANIMATION --- */
-    .details-panel {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
-    }
-    .details-panel.open {
-        max-height: 1000px;
-        transition: max-height 0.6s ease-in-out;
+    /* Superset Connector */
+    .superset-link {
+        position: absolute;
+        left: -1px;
+        top: 20px;
+        bottom: -20px;
+        width: 4px;
+        background: var(--violet);
+        z-index: 10;
     }
 
     /* --- BOTTOM NAV --- */
     .glass-dock {
-        background: rgba(5, 8, 20, 0.85);
+        background: rgba(2, 6, 23, 0.9);
         backdrop-filter: blur(30px) saturate(180%);
         border-top: 1px solid rgba(255,255,255,0.08);
         padding-bottom: env(safe-area-inset-bottom);
     }
     .nav-btn.active { color: #22d3ee; text-shadow: 0 0 10px var(--cyan-glow); }
-    .nav-btn.active i { transform: scale(1.1); }
 
   </style>
 </head>
 <body class="selection:bg-cyan-500/30">
 
-  <!-- DYNAMIC BACKGROUND -->
+  <!-- BACKGROUND -->
   <canvas id="neuro-net"></canvas>
 
-  <!-- HEADER -->
-  <header class="fixed top-0 w-full z-40 px-6 pt-12 pb-2 bg-gradient-to-b from-[#020617] via-[#020617]/95 to-transparent backdrop-blur-sm">
-      <div class="flex justify-between items-end mb-4">
+  <!-- HEADER STICKY -->
+  <header class="fixed top-0 w-full z-40 bg-[#020617]/95 backdrop-blur-md border-b border-white/5 pt-safe">
+      
+      <!-- Top Bar -->
+      <div class="flex justify-between items-center px-5 pt-4 pb-2">
           <div>
-              <div class="flex items-center gap-2 mb-1">
-                   <i data-lucide="crosshair" class="w-3 h-3 text-cyan-400 animate-spin-slow"></i>
-                   <span class="text-[9px] font-bold tracking-[0.2em] text-cyan-500 uppercase font-mono-tech">ARMORY ACCESS</span>
+              <div class="text-[10px] font-bold tracking-[0.2em] text-cyan-500 uppercase font-mono-tech flex items-center gap-2">
+                  <span class="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></span>
+                  OPERATOR ACCESS
               </div>
-              <h1 class="text-3xl font-hud font-black text-white italic tracking-wide text-glow-white">
-                  MISSION<span class="text-cyan-400">.SELECT</span>
+              <h1 class="text-2xl font-hud font-black text-white italic tracking-wide">
+                  MISSION<span class="text-slate-500">.LOG</span>
               </h1>
           </div>
-          <div class="w-10 h-10 rounded-lg bg-slate-800 border border-slate-600/50 relative overflow-hidden">
-             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover opacity-80" />
+          <button class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-500 transition-all">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+          </button>
+      </div>
+
+      <!-- TIMELINE WEEK SELECTOR -->
+      <div class="py-4 border-t border-white/5">
+          <div class="timeline-container" id="timeline">
+              <!-- JS Generated 26 Weeks -->
           </div>
-      </div>
-
-      <!-- HUD SEARCH -->
-      <div class="relative group">
-          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
-          <input type="text" id="search-input" placeholder="SEARCH PROTOCOLS_..." class="hud-input w-full bg-black/40 rounded-lg py-3 pl-10 pr-4 text-sm placeholder:text-slate-600">
-      </div>
-
-      <!-- FILTERS -->
-      <div class="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar">
-          <button class="filter-chip active px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap" onclick="filterWorkouts('all', this)">ALL SYSTEMS</button>
-          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('dimanche', this)">DIMANCHE</button>
-          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('mardi', this)">MARDI</button>
-          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('vendredi', this)">VENDREDI</button>
-          <button class="filter-chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap" onclick="filterWorkouts('maison', this)">HOME</button>
       </div>
   </header>
 
-  <!-- MAIN LIST -->
-  <main class="relative z-10 pt-48 px-4 pb-36 space-y-4" id="workouts-container">
-      <!-- WORKOUTS INJECTED HERE VIA JS -->
+  <!-- MAIN SCROLL AREA -->
+  <main class="relative z-10 pt-[190px] px-4 pb-36 space-y-6">
+
+      <!-- INTEL PANEL (Current Block Info) -->
+      <section class="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900 to-black p-5 shadow-2xl">
+          <div class="grid-bg"></div>
+          <div class="absolute top-0 right-0 p-2 opacity-20">
+              <i data-lucide="cpu" class="w-24 h-24 text-white"></i>
+          </div>
+
+          <div class="relative z-10 flex flex-col gap-4">
+              <!-- Block Header -->
+              <div class="flex justify-between items-start">
+                  <div>
+                      <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Active Phase</div>
+                      <h2 class="text-2xl font-hud font-black text-white uppercase text-glow-white" id="block-title">---</h2>
+                  </div>
+                  <div class="text-right">
+                       <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Target RPE</div>
+                       <div class="text-3xl font-mono-tech font-bold text-yellow-400" id="rpe-display">--</div>
+                  </div>
+              </div>
+
+              <!-- Technique Badge -->
+              <div class="flex items-center gap-3 bg-white/5 p-3 rounded border border-white/5 backdrop-blur-sm">
+                  <div class="w-10 h-10 rounded bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center text-cyan-400">
+                      <i data-lucide="zap" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                      <div class="text-[10px] text-slate-400 font-bold uppercase">Technique Protocol</div>
+                      <div class="text-sm font-bold text-white uppercase tracking-wide" id="technique-display">---</div>
+                  </div>
+              </div>
+
+              <!-- Deload Warning (Hidden by default) -->
+              <div id="deload-banner" class="hidden flex items-center gap-2 text-orange-400 bg-orange-500/10 px-3 py-2 rounded border border-orange-500/30">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                  <span class="text-[10px] font-bold uppercase tracking-wider">System Recovery / Load Reduced -40%</span>
+              </div>
+          </div>
+      </section>
+
+      <!-- WORKOUTS LIST -->
+      <div id="workouts-list" class="space-y-6">
+          <!-- Injected via JS -->
+      </div>
+
   </main>
 
   <!-- NAVIGATION DOCK -->
@@ -184,7 +278,7 @@
               <span class="text-[9px] font-bold uppercase tracking-wider">Deck</span>
           </a>
           
-          <button class="nav-btn active flex flex-col items-center gap-1.5 p-2 w-16 group">
+          <button class="nav-btn flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
               <i data-lucide="activity" class="w-6 h-6 transition-transform"></i>
               <span class="text-[9px] font-bold uppercase tracking-wider">Ops</span>
           </button>
@@ -196,7 +290,7 @@
               </button>
           </div>
 
-          <button class="nav-btn flex flex-col items-center gap-1.5 p-2 w-16 group text-slate-500 hover:text-white transition-colors">
+          <button class="nav-btn active flex flex-col items-center gap-1.5 p-2 w-16 group">
               <i data-lucide="calendar" class="w-6 h-6 transition-transform"></i>
               <span class="text-[9px] font-bold uppercase tracking-wider">Plan</span>
           </button>
@@ -228,9 +322,9 @@
         constructor() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = (Math.random() - 0.5) * 0.5;
-            this.size = Math.random() * 2;
+            this.vx = (Math.random() - 0.5) * 0.3;
+            this.vy = (Math.random() - 0.5) * 0.3;
+            this.size = Math.random() * 1.5;
         }
         update() {
             this.x += this.vx;
@@ -239,181 +333,182 @@
             if (this.y < 0 || this.y > height) this.vy *= -1;
         }
         draw() {
-            ctx.fillStyle = 'rgba(139, 92, 246, 0.2)'; // Violet tint for Archive
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; 
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();
         }
     }
-    for (let i = 0; i < 40; i++) particles.push(new Particle());
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
     function animateNetwork() {
         ctx.clearRect(0, 0, width, height);
         for (let i = 0; i < particles.length; i++) {
             particles[i].update();
             particles[i].draw();
-            for (let j = i; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 100) {
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(139, 92, 246, ${0.1 - distance/1000})`;
-                    ctx.lineWidth = 0.5;
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.stroke();
-                }
-            }
         }
         requestAnimationFrame(animateNetwork);
     }
     animateNetwork();
 
     // --- LOGIC ---
-    const container = document.getElementById('workouts-container');
-    const currentWeek = 1;
-    const weekData = programData.getWeek(currentWeek);
-    const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+    let currentWeek = 1;
 
-    // Map days to nice UI labels
-    const UI_CONFIG = {
-        'dimanche': { label: 'DIM', color: 'text-cyan-400', border: 'border-cyan-500/50', icon: 'anchor' },
-        'mardi': { label: 'MAR', color: 'text-violet-400', border: 'border-violet-500/50', icon: 'zap' },
-        'vendredi': { label: 'VEN', color: 'text-emerald-400', border: 'border-emerald-500/50', icon: 'activity' },
-        'maison': { label: 'HOME', color: 'text-amber-400', border: 'border-amber-500/50', icon: 'home' }
-    };
+    function init() {
+        renderTimeline();
+        updateView(currentWeek);
+        lucide.createIcons();
+    }
 
-    window.filterWorkouts = (filter, btn) => {
-        // Update UI
-        document.querySelectorAll('.filter-chip').forEach(b => {
-            b.classList.remove('active', 'text-cyan-400', 'border-cyan-500');
-            b.classList.add('text-slate-400');
-        });
-        if(btn) {
-            btn.classList.add('active');
-            btn.classList.remove('text-slate-400');
-        }
-
-        renderList(filter);
-    };
-
-    function renderList(filter = 'all') {
+    function renderTimeline() {
+        const container = document.getElementById('timeline');
         container.innerHTML = '';
         
-        days.forEach(day => {
-            if (filter !== 'all' && day !== filter) return;
+        for (let i = 1; i <= 26; i++) {
+            const isDeload = programData.isDeloadWeek(i);
+            const chip = document.createElement('div');
+            chip.className = `week-chip ${isDeload ? 'deload' : ''} ${i === currentWeek ? 'active' : ''}`;
+            chip.onclick = () => {
+                currentWeek = i;
+                document.querySelectorAll('.week-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                chip.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                updateView(i);
+            };
+            
+            chip.innerHTML = `
+                <span class="text-[9px] font-bold uppercase tracking-wider week-label ${isDeload ? 'text-orange-400' : 'text-slate-500'}">Week</span>
+                <span class="text-xl font-hud font-bold text-white week-num">${i}</span>
+                ${isDeload ? '<div class="absolute bottom-1 w-1 h-1 rounded-full bg-orange-500"></div>' : ''}
+            `;
+            container.appendChild(chip);
+        }
+    }
 
+    function updateView(weekNum) {
+        const weekData = programData.getWeek(weekNum);
+        const blockName = programData.info.blockTechniques[`block${weekData.block}`]?.name || 'Unknown';
+        
+        // 1. Update Intel Panel
+        document.getElementById('block-title').textContent = `BLOCK ${weekData.block} // ${blockName}`;
+        document.getElementById('technique-display').textContent = weekData.technique;
+        document.getElementById('rpe-display').textContent = weekData.rpeTarget;
+        
+        const deloadBanner = document.getElementById('deload-banner');
+        if (weekData.isDeload) deloadBanner.classList.remove('hidden');
+        else deloadBanner.classList.add('hidden');
+
+        // 2. Render Workouts
+        const list = document.getElementById('workouts-list');
+        list.innerHTML = '';
+        
+        const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+        const colors = {
+            'dimanche': { border: 'border-cyan-500', text: 'text-cyan-400', glow: 'shadow-cyan-500/20' },
+            'mardi': { border: 'border-violet-500', text: 'text-violet-400', glow: 'shadow-violet-500/20' },
+            'vendredi': { border: 'border-emerald-500', text: 'text-emerald-400', glow: 'shadow-emerald-500/20' },
+            'maison': { border: 'border-amber-500', text: 'text-amber-400', glow: 'shadow-amber-500/20' }
+        };
+
+        days.forEach(day => {
             const workout = weekData[day];
             if (!workout) return;
+            const style = colors[day];
+
+            const card = document.createElement('div');
+            card.className = "blueprint-card group";
             
-            const ui = UI_CONFIG[day];
-            
-            // Calculate Stats
+            // Calculate Load
             let totalLoad = 0;
             workout.exercises.forEach(ex => {
                 const reps = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[0]) : ex.reps;
                 totalLoad += ex.sets * reps * ex.weight;
             });
 
-            // Card HTML
-            const card = document.createElement('div');
-            card.className = "quantum-card group overflow-hidden transition-all duration-300";
-            
             card.innerHTML = `
-                <div class="holo-border"></div>
-                
-                <!-- HEADER (Clickable) -->
-                <div class="p-5 cursor-pointer relative z-10" onclick="toggleDetails('${day}')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex gap-3 items-center">
-                            <div class="w-10 h-10 rounded-lg bg-slate-900 border ${ui.border} flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)]">
-                                <span class="font-hud font-bold text-lg ${ui.color}">${ui.label}</span>
-                            </div>
-                            <div>
-                                <h3 class="font-hud font-black text-xl text-white italic uppercase leading-none mb-1">${workout.name.split('+')[0]}</h3>
-                                <div class="flex gap-2 text-[10px] font-mono-tech text-slate-400">
-                                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${workout.duration} MIN</span>
-                                    <span class="flex items-center gap-1"><i data-lucide="layers" class="w-3 h-3"></i> ${workout.totalSets} SETS</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                             <div class="text-xs font-bold font-mono-tech ${ui.color}">${(totalLoad/1000).toFixed(1)}k</div>
-                             <div class="text-[8px] text-slate-500 uppercase tracking-widest">Load</div>
-                        </div>
-                    </div>
-
-                    <!-- Progress Bar Decoy -->
-                    <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden flex">
-                        <div class="h-full w-1/3 bg-slate-600"></div>
-                        <div class="h-full w-1/3 bg-slate-700"></div>
+                <!-- CARD HEADER -->
+                <div class="p-5 cursor-pointer relative z-20" onclick="toggleCard(this)">
+                    <div class="flex justify-between items-start">
+                         <div class="flex gap-4">
+                             <div class="flex flex-col items-center gap-1">
+                                 <div class="w-12 h-12 rounded border ${style.border} bg-white/5 flex items-center justify-center font-hud font-bold text-xl text-white shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+                                     ${day.substring(0,3).toUpperCase()}
+                                 </div>
+                                 <div class="h-full w-[1px] bg-gradient-to-b from-${style.text.split('-')[1]}-500/50 to-transparent"></div>
+                             </div>
+                             <div>
+                                 <h3 class="text-xl font-hud font-black text-white uppercase italic leading-none mb-1 group-hover:${style.text} transition-colors">${workout.name.split('+')[0]}</h3>
+                                 <div class="flex items-center gap-3 text-[10px] font-mono-tech text-slate-400">
+                                     <span class="bg-white/5 px-2 py-0.5 rounded border border-white/5">${workout.duration} MIN</span>
+                                     <span class="bg-white/5 px-2 py-0.5 rounded border border-white/5">${workout.totalSets} SETS</span>
+                                     <span class="text-${style.text.split('-')[1]}-400 font-bold">${(totalLoad/1000).toFixed(1)}T</span>
+                                 </div>
+                             </div>
+                         </div>
+                         <i data-lucide="chevron-down" class="text-slate-500 transition-transform group-[.expanded]:rotate-180"></i>
                     </div>
                 </div>
 
-                <!-- DETAILS (Accordion) -->
-                <div id="details-${day}" class="details-panel bg-black/40 border-t border-white/5">
-                    <div class="p-4 space-y-3">
-                        ${workout.exercises.map(ex => `
-                            <div class="flex items-center justify-between p-2 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-1 h-8 ${ui.color.replace('text', 'bg')} rounded-full shadow-[0_0_8px_currentColor]"></div>
+                <!-- EXERCISE BLUEPRINT (Hidden) -->
+                <div class="details-panel max-h-0 overflow-hidden transition-all duration-500 bg-black/40 border-t border-white/5">
+                    <div class="p-5 space-y-0 pl-2">
+                        ${workout.exercises.map((ex, idx) => {
+                            const isSuper = ex.isSuperset;
+                            return `
+                            <div class="ex-row ${isSuper ? 'border-l-2 border-violet-500/50' : ''}">
+                                ${isSuper ? '<div class="absolute left-[-2px] top-0 bottom-0 w-[2px] bg-violet-500 shadow-[0_0_10px_#8b5cf6]"></div>' : ''}
+                                <div class="flex justify-between items-start">
                                     <div>
-                                        <div class="text-xs font-bold text-white uppercase">${ex.name}</div>
-                                        <div class="text-[9px] text-slate-400 font-mono-tech">${ex.sets} × ${ex.reps} • ${ex.notes || 'Normal'}</div>
+                                        <div class="text-xs font-bold text-white uppercase mb-0.5">${ex.name}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono-tech">
+                                            <span class="text-white">${ex.sets}</span> SETS <span class="text-slate-600">x</span> <span class="text-white">${ex.reps}</span>
+                                            ${ex.notes ? `<span class="block text-cyan-500/80 mt-1 italic tracking-tight">>> ${ex.notes}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-mono-tech text-sm font-bold text-${style.text.split('-')[1]}-400">${ex.weight}</div>
+                                        <div class="text-[8px] text-slate-600 uppercase">KG</div>
                                     </div>
                                 </div>
-                                <div class="font-mono-tech text-xs font-bold text-white bg-black/50 px-2 py-1 rounded border border-white/10">
-                                    ${ex.weight}kg
-                                </div>
                             </div>
-                        `).join('')}
-                        
-                        <button class="w-full py-3 mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg font-hud font-bold text-white uppercase tracking-widest shadow-[0_0_20px_rgba(34,211,238,0.4)] hover:scale-[1.02] transition-transform active:scale-95 flex items-center justify-center gap-2">
-                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Initiate Protocol
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="p-4 bg-gradient-to-r from-${style.text.split('-')[1]}-900/20 to-transparent border-t border-white/5 flex justify-end">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-${style.text.split('-')[1]}-500 hover:bg-${style.text.split('-')[1]}-400 text-white text-xs font-bold uppercase rounded shadow-lg shadow-${style.text.split('-')[1]}-500/20 transition-all active:scale-95">
+                            <i data-lucide="play" class="w-3 h-3 fill-current"></i> Start Mission
                         </button>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
+            list.appendChild(card);
         });
         
         lucide.createIcons();
     }
 
-    // Toggle Function
-    window.toggleDetails = (day) => {
-        const el = document.getElementById(`details-${day}`);
+    window.toggleCard = (el) => {
         const card = el.parentElement;
+        const panel = card.querySelector('.details-panel');
         
         // Close others
-        document.querySelectorAll('.details-panel').forEach(p => {
-            if (p !== el) {
-                p.classList.remove('open');
-                p.parentElement.classList.remove('expanded');
+        document.querySelectorAll('.blueprint-card.expanded').forEach(c => {
+            if (c !== card) {
+                c.classList.remove('expanded');
+                c.querySelector('.details-panel').style.maxHeight = null;
             }
         });
 
-        el.classList.toggle('open');
         card.classList.toggle('expanded');
+        if (card.classList.contains('expanded')) {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        } else {
+            panel.style.maxHeight = null;
+        }
     };
 
-    // Search Feature
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const cards = document.querySelectorAll('.quantum-card');
-        
-        cards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-            if(text.includes(term)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-
-    // Initial Render
-    renderList();
+    // Init
+    init();
 
   </script>
 </body>
