@@ -52,7 +52,7 @@
 
     /* --- IPHONE OPTIMIZED INTERACTIONS --- */
     .touch-pop {
-        transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s, box-shadow 0.1s;
+        transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s;
         will-change: transform;
         transform: translateZ(0); /* GPU Accel */
         cursor: pointer;
@@ -82,11 +82,22 @@
         transition: left 0.3s;
     }
 
+    /* STAGGERED ANIMATIONS */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
     /* MODAL */
     .modal-overlay {
         position: fixed; inset: 0; z-index: 100;
         background: rgba(5, 5, 16, 0.9);
         backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         display: flex; align-items: center; justify-content: center;
         opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
@@ -136,7 +147,7 @@
   <main class="relative z-10 pt-[100px] pb-32 px-4 space-y-8">
 
       <!-- HERO SECTION -->
-      <section class="mt-2 text-center">
+      <section class="mt-2 text-center animate-entry" style="animation-delay: 0s;">
           <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 shadow-[0_0_20px_rgba(255,45,149,0.2)]">
               <span class="relative flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-magenta-400 opacity-75"></span>
@@ -150,8 +161,8 @@
           <p class="text-xs text-slate-400 max-w-[260px] mx-auto leading-relaxed">Accomplissez les missions. Gagnez de l'XP. Devenez une Élite.</p>
       </section>
 
-      <!-- DASHBOARD GRID -->
-      <div class="grid grid-cols-2 gap-3">
+      <!-- DASHBOARD GRID (REVISED) -->
+      <div class="grid grid-cols-2 gap-3 animate-entry" style="animation-delay: 0.1s;">
           <!-- Current Streak -->
           <div class="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-sm touch-pop active:border-orange-500/50 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]">
               <i data-lucide="flame" class="w-8 h-8 text-orange-500 mb-2 drop-shadow-[0_0_10px_rgba(249,115,22,0.6)]"></i>
@@ -167,7 +178,7 @@
       </div>
 
       <!-- CURRENT PROTOCOL WIDGET (SCREENSHOT STYLE) -->
-      <section>
+      <section class="animate-entry" style="animation-delay: 0.2s;">
           <div class="bg-[#0f0f20]/80 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden touch-pop">
               <!-- Glow corner -->
               <div class="absolute -top-10 -right-10 w-40 h-40 bg-[var(--cyan)]/10 blur-3xl rounded-full pointer-events-none"></div>
@@ -203,7 +214,7 @@
       </section>
 
       <!-- VERTICAL WORKOUT STACK -->
-      <section>
+      <section class="animate-entry" style="animation-delay: 0.3s;">
           <div class="flex items-center justify-between mb-5 px-1">
               <h2 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <i data-lucide="crosshair" class="w-4 h-4 text-[var(--cyan)]"></i>
@@ -218,9 +229,9 @@
       </section>
 
       <!-- STORYTELLING QUOTE -->
-      <div class="p-6 relative rounded-2xl border border-white/5 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-md overflow-hidden touch-pop">
+      <div class="p-6 relative rounded-2xl border border-white/5 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-md overflow-hidden touch-pop animate-entry" style="animation-delay: 0.4s;">
           <div class="absolute -right-2 -top-2 opacity-10"><i data-lucide="quote" class="w-20 h-20 text-white"></i></div>
-          <p class="relative z-10 font-hud text-xl italic text-slate-200 leading-tight">
+          <p class="relative z-10 font-hud text-xl italic text-slate-200 leading-tight" id="daily-quote">
               "La douleur est temporaire. L'abandon est <span class="text-[var(--magenta)] font-bold text-shadow-magenta">définitif</span>."
           </p>
       </div>
@@ -282,6 +293,13 @@
     // --- GAMIFICATION LOGIC ---
     const XP_LEVELS = [0, 1000, 2500, 5000, 10000];
     const RANKS = ["Recrue", "Soldat", "Vétéran", "Élite", "Légende"];
+    const QUOTES = [
+        "La douleur est temporaire. L'abandon est définitif.",
+        "Le seul mauvais entraînement est celui que tu n'as pas fait.",
+        "Ton corps peut tout supporter. C'est ta tête qu'il faut convaincre.",
+        "Ne rêve pas de réussite. Entraîne-toi pour l'obtenir.",
+        "La discipline est le pont entre les objectifs et l'accomplissement."
+    ];
     
     function loadGamification() {
         const xp = parseInt(localStorage.getItem('hybrid_xp') || '0');
@@ -302,6 +320,17 @@
         document.getElementById('level-display').textContent = level;
         document.getElementById('xp-display').textContent = `${xp} / ${nextXp} XP`;
         document.getElementById('xp-bar').style.width = `${progress}%`;
+        
+        // Random Quote
+        const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+        const quoteEl = document.getElementById('daily-quote');
+        // Split quote for color effect if possible
+        const parts = randomQuote.split('.');
+        if(parts.length > 1) {
+             quoteEl.innerHTML = `${parts[0]}. <span class="text-[var(--magenta)] font-bold text-shadow-magenta">${parts[1]}</span>`;
+        } else {
+             quoteEl.textContent = randomQuote;
+        }
     }
 
     // --- DASHBOARD LOGIC ---
@@ -340,6 +369,11 @@
         // --- POPULATE WORKOUT LIST (VERTICAL STACK) ---
         const container = document.getElementById('workout-stack');
         const days = ['dimanche', 'mardi', 'vendredi', 'maison'];
+        
+        // Simulated "Done" status logic (simplified)
+        const todayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
+        // Map day names to index
+        const dayIndices = { 'dimanche': 0, 'mardi': 2, 'vendredi': 5, 'maison': 2 }; // Maison can be special
 
         const dayMeta = {
           'dimanche': { color: 'var(--cyan)', label: 'FORCE / HYBRIDE', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop' },
@@ -348,7 +382,7 @@
           'maison': { color: '#94a3b8', label: 'ACCESSOIRE', img: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=1470&auto=format&fit=crop' }
         };
 
-        days.forEach(day => {
+        days.forEach((day, index) => {
             const workout = weekData[day];
             if(!workout) return;
             const meta = dayMeta[day];
@@ -359,11 +393,26 @@
                 const r = typeof ex.reps === 'string' ? 8 : ex.reps;
                 vol += ex.sets * r * ex.weight;
             });
+            
+            // Determine Status (Fake logic for demo: First card = Done, Second = Active)
+            let statusIcon = '';
+            let opacityClass = 'opacity-100';
+            let ringClass = 'border-white/10';
+            
+            // Logic simulation
+            if (index === 0) { // Dimanche (Completed)
+                statusIcon = `<div class="absolute top-4 right-14 bg-green-500/20 text-green-400 px-2 py-1 rounded border border-green-500/50 text-[9px] font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> TERMINÉ</div>`;
+                opacityClass = 'opacity-70 grayscale-[0.5]';
+            } else if (index === 1) { // Mardi (Active)
+                statusIcon = `<div class="absolute top-4 right-14 bg-[var(--cyan)]/20 text-[var(--cyan)] px-2 py-1 rounded border border-[var(--cyan)]/50 text-[9px] font-bold flex items-center gap-1 animate-pulse"><i data-lucide="zap" class="w-3 h-3"></i> EN COURS</div>`;
+                ringClass = 'border-[var(--cyan)] shadow-[0_0_15px_rgba(0,234,255,0.2)]';
+            }
 
             // Vertical Card HTML
             const card = document.createElement('div');
-            card.className = "card-sheen relative group cursor-pointer touch-pop rounded-2xl overflow-hidden border border-white/10 bg-[#0f172a]";
+            card.className = `card-sheen relative group cursor-pointer touch-pop rounded-2xl overflow-hidden border bg-[#0f172a] ${ringClass} ${opacityClass} animate-entry`;
             card.style.height = "180px"; 
+            card.style.animationDelay = `${0.3 + (index * 0.1)}s`; // Stagger delay
             
             // Click -> Go to Session (Default)
             card.onclick = (e) => {
@@ -377,12 +426,14 @@
               
               <!-- Content -->
               <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                  <div class="flex justify-between items-start">
+                  <div class="flex justify-between items-start w-full relative">
                       <div>
                           <span class="inline-block px-2 py-0.5 rounded bg-black/50 border border-white/20 text-[9px] font-bold text-white uppercase backdrop-blur-md mb-2 shadow-lg" style="color: ${meta.color}; border-color: ${meta.color}">${meta.label}</span>
                           <h3 class="text-3xl font-hud font-black text-white italic uppercase leading-none drop-shadow-lg">${day}</h3>
                           <div class="text-sm text-slate-300 font-bold truncate max-w-[200px] mt-1 opacity-90">${workout.name.split('+')[0]}</div>
                       </div>
+                      
+                      ${statusIcon}
                       
                       <!-- DETAILS BUTTON (SCANNER) -->
                       <button class="scan-btn w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md hover:bg-[var(--cyan)] hover:text-black transition-colors shadow-lg touch-pop" data-day="${day}">
